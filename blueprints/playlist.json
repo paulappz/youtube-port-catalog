@@ -1,0 +1,38 @@
+{
+    "identifier": "youtube_playlist",
+    "title": "YouTube Playlist",
+    "description": "Blueprint for YouTube Playlist",
+    "schema": {
+        "properties": {
+            "title": { "type": "string", "title": "Playlist Title" },
+            "link": { "type": "string", "title": "Playlist Link", "format": "url" },
+            "description": { "type": "string", "title": "Playlist Description" },
+            "publishedAt": { "type": "string", "title": "Publish Date","format": "date-time" },
+            "channelId": { "type": "string", "title": "Channel ID" },
+            "channelTitle": { "type": "string", "title": "Channel Title" },
+            "thumbnails": {
+                "type": "object",
+                "title": "Thumbnails",
+                "properties": {
+                    "default": { "type": "string", "title": "Default Thumbnail" },
+                    "medium": { "type": "string", "title": "Medium Thumbnail" },
+                    "high": { "type": "string", "title": "High Thumbnail" },
+                    "standard": { "type": "string", "title": "Standard Thumbnail" }
+                }
+            },
+            "localized": {
+                "type": "object",
+                "title": "Localized Information",
+                "properties": {
+                    "title": { "type": "string", "title": "Localized Title" },
+                    "description": { "type": "string", "title": "Localized Description" }
+                }
+            }
+        },
+        "required": ["title", "description", "publishedAt", "channelId", "channelTitle"]
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "aggregationProperties": {},
+    "relations": {}
+}

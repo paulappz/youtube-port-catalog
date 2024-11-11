@@ -1,0 +1,43 @@
+{
+    "identifier": "youtube_video",
+    "title": "YouTube Video",
+    "description": "Blueprint for YouTube Video",
+    "schema": {
+        "properties": {
+            "title": { "type": "string", "title": "Video Title" },
+            "link": { "type": "string", "title": "Video Link", "format": "url" },
+            "duration": { "type": "string", "title": "Video Duration" },
+            "description": { "type": "string", "title": "Video Description" },
+            "publishedAt": { "type": "string", "title": "Publish Date", "format": "date-time" },
+            "position": { "type": "number", "title": "Position in Playlist" },
+            "likes": { "type": "number", "title": "Like Count" },
+            "views": { "type": "number", "title": "View Count" },
+            "comments": { "type": "number", "title": "Comment Count" },
+            "thumbnails": {
+                "type": "object",
+                "title": "Thumbnails",
+                "properties": {
+                    "default": { "type": "string", "title": "Default Thumbnail" },
+                    "medium": { "type": "string", "title": "Medium Thumbnail" },
+                    "high": { "type": "string", "title": "High Thumbnail" },
+                    "standard": { "type": "string", "title": "Standard Thumbnail" },
+                    "maxres": { "type": "string", "title": "Max Resolution Thumbnail" }
+                }
+            },
+            "videoOwnerChannelTitle": { "type": "string", "title": "Channel Title" },
+            "videoOwnerChannelId": { "type": "string", "title": "Channel ID" }
+        },
+        "required": ["title", "description", "publishedAt", "duration", "link"]
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "aggregationProperties": {},
+    "relations": {
+        "playlist": {
+            "title": "Playlist",
+            "many": false,
+            "target": "youtube_playlist",
+            "required": true
+        }
+    }
+}

@@ -1,0 +1,43 @@
+name: Update YouTube Playlist and Video Entities in Port
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]  
+
+jobs:
+  update_port_entities:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run YouTube Data Fetch and Prepare Port Entities
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python fetch_youtube_data.py
+
+      - name: Read Port Entities JSON
+        id: read_json
+        run: |
+          cat port_entities.json
+          echo "entities=$(cat port_entities.json | jq -c .)" >> $GITHUB_ENV
+
+      - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: BULK_UPSERT
+          entities: ${{ env.entities }}
