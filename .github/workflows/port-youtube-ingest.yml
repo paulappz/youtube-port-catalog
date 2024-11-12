@@ -9,6 +9,11 @@ on:
           Who triggered the action and general context (blueprint, run id, etc...)
         type: string 
 
+
+  push:
+    branches:
+      - 'test'    # Runs on develop branch
+
 jobs:
   update_port_entities:
     runs-on: ubuntu-latest
