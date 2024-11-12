@@ -174,268 +174,128 @@ Here’s an example of what you would see on Port when trying to create blueprin
 
 ## Step 2: GitHub Workflow for Data Ingestion
 
+
+### Create a Port action using the following JSON definition:
+
+```yaml showLineNumbers
+{
+  "identifier": "create_youtube_catalog",
+  "title": "Create Youtube Catalog",
+  "icon": "Github",
+  "description": "Automate Youtube Catalog Workflow",
+  "trigger": {
+    "type": "self-service",
+    "operation": "CREATE",
+    "userInputs": {
+      "properties": {
+        "service_name": {
+          "icon": "DefaultProperty",
+          "title": "  Service Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_name"
+      ]
+    },
+    "blueprintIdentifier": "youtubecatalog"
+  },
+  "invocationMethod": {
+    "type": "GITHUB",
+    "org": "paulappz",
+    "repo": "port-doc",
+    "workflow": "port-youtube-ingest.yml",
+    "workflowInputs": {
+      "port_context": {
+        "entity": "{{.entity}}",
+        "blueprint": "{{.action.blueprint}}",
+        "runId": "{{.run.id}}",
+        "trigger": "{{ .trigger }}"
+      }
+    },
+    "reportWorkflowStatus": true
+  },
+  "requiredApproval": false
+}
+```
+
+--- 
+
+<img src='/img/catalogblueprint.png' border='1px' />
+
+---
+
+###  Create a Port action using the following JSON definition:
+
+```yaml
+{
+  "identifier": "create_youtube_catalog",
+  "title": "Create Youtube Catalog",
+  "icon": "Github",
+  "description": "Automate Youtube Catalog Workflow",
+  "trigger": {
+    "type": "self-service",
+    "operation": "CREATE",
+    "userInputs": {
+      "properties": {
+        "service_name": {
+          "icon": "DefaultProperty",
+          "title": "  Service Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_name"
+      ]
+    },
+    "blueprintIdentifier": "youtubecatalog"
+  },
+  "invocationMethod": {
+    "type": "GITHUB",
+    "org": "paulappz",
+    "repo": "port-doc",
+    "workflow": "port-youtube-ingest.yml",
+    "workflowInputs": {
+      "port_context": {
+        "entity": "{{.entity}}",
+        "blueprint": "{{.action.blueprint}}",
+        "runId": "{{.run.id}}",
+        "trigger": "{{ .trigger }}"
+      }
+    },
+    "reportWorkflowStatus": true
+  },
+  "requiredApproval": false
+}
+```
+
+---
+
+<img src='/img/portaction.png' border='1px' />
+
+---
+
+
 The following GitHub workflow automates fetching data from YouTube and updating Port with the data.
 
 ### GitHub Workflow (`.github/workflows/youtube_port_workflow.yml`)
 
 ```yaml showLineNumbers
-name: Update YouTube Playlist and Video Entities in Port
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
-
-jobs:
-  update_port_entities:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run YouTube Data Fetch and Prepare Port Entities
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-        run: python fetch_youtube_data.py
-
-      - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
-        uses: port-labs/port-github-action@v1
-        with:
-          clientId: ${{ secrets.CLIENT_ID }}
-          clientSecret: ${{ secrets.CLIENT_SECRET }}
-          baseUrl: https://api.getport.io
-          operation: BULK_UPSERT
-          entities: ${{ toJson(fromJson(file('port_entities.json'))) }}
 ```
 
 ---
 
-### Fetch YouTube Data
-
-The `fetch_youtube_data.py` script retrieves YouTube data and prepares it in the required JSON format.
-
-```python
-import requests
-import json
-from googleapiclient.discovery import build
-import os
-import logging
-from dotenv import load_dotenv
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-load_dotenv()
-
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-PLAYLIST_ID = "YOUR_PLAYLIST_ID"
-
-def fetch_youtube_playlist_data(api_key, playlist_id):
-    youtube = build("youtube", "v3", developerKey=api_key)
-    videos = []
-    # Additional logic to fetch video details
-    # ...
-    return videos
-
-def fetch_youtube_playlist_info(api_key, playlist_id):
-    youtube = build("youtube", "v3", developerKey=api_key)
-    request = youtube.playlists().list(
-        part="snippet",
-        id=playlist_id
-    )
-    # Additional logic to fetch playlist details
-    # ...
-    return {
-        "identifier": playlist_id,
-        "blueprint": "youtube_playlist",
-        # Additional playlist props
-        # ...
-    }
-
-def main():
-    playlist_data = fetch_youtube_playlist_info(YOUTUBE_API_KEY, PLAYLIST_ID)
-    videos_data = fetch_youtube_playlist_data(YOUTUBE_API_KEY, PLAYLIST_ID)
-    # Combine Playlist and Video data for BULK_UPSERT
-    all_data = [playlist_data] + videos_data
-    with open("port_entities.json", "w") as f:
-        json.dump(all_data, f, indent=4)
-    logging.info("Fetched YouTube data and saved to port_entities.json")
-
-if __name__ == "__main__":
-    main()
-```
----
-
-   <details>
-     <summary>Fetch YouTube Data complete implementation (click to expand)</summary>
-     
-```python showLineNumbers
-import requests
-import json
-from googleapiclient.discovery import build
-import os
-import logging
-from dotenv import load_dotenv
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
-load_dotenv()  # Load environment variables from .env file
-
-# Client credentials
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-
-# YouTube playlist details
-PLAYLIST_ID = "YOUR_PLAYLIST_ID"
-
-def fetch_youtube_playlist_data(api_key, playlist_id):
-    youtube = build("youtube", "v3", developerKey=api_key)
-    videos = []
-    next_page_token = None
-
-    while True:
-        playlist_request = youtube.playlistItems().list(
-            part="snippet,contentDetails", playlistId=playlist_id, maxResults=10, pageToken=next_page_token
-        )
-        playlist_response = playlist_request.execute()
-        
-        for item in playlist_response["items"]:
-            video_id = item["contentDetails"]["videoId"]
-            
-            # Fetch additional video details including duration, likes, views, and comments
-            video_request = youtube.videos().list(
-                part="contentDetails,statistics",
-                id=video_id
-            )
-            video_response = video_request.execute()
-            video_details = video_response["items"][0]
-            duration = video_details["contentDetails"]["duration"]
-            likes = int(video_details["statistics"].get("likeCount", 0))
-            views = int(video_details["statistics"].get("viewCount", 0))
-            comments = int(video_details["statistics"].get("commentCount", 0))
-
-            title = item["snippet"]["title"]
-            description = item["snippet"]["description"]
-            publishedAt = item["snippet"]["publishedAt"]
-            position = item["snippet"].get("position", None)
-            thumbnails = item["snippet"]["thumbnails"]
-            videoOwnerChannelTitle = item["snippet"].get("videoOwnerChannelTitle", "")
-            videoOwnerChannelId = item["snippet"].get("videoOwnerChannelId", "")
-            video_link = f"https://www.youtube.com/watch?v={video_id}"
-
-            videos.append({
-                "identifier": video_id,
-                "blueprint": "youtube_video",
-                "properties": {
-                    "title": title,
-                    "duration": duration,
-                    "link": video_link,
-                    "description": description,
-                    "publishedAt": publishedAt,
-                    "position": position,
-                    "likes": likes,
-                    "views": views,
-                    "comments": comments,
-                    "thumbnails": {
-                        "default": thumbnails["default"]["url"],
-                        "medium": thumbnails["medium"]["url"],
-                        "high": thumbnails["high"]["url"],
-                        "standard": thumbnails.get("standard", {}).get("url")
-                    },
-                    "videoOwnerChannelTitle": videoOwnerChannelTitle,
-                    "videoOwnerChannelId": videoOwnerChannelId
-                },
-                "relations": {
-                    "playlist": playlist_id
-                }
-            })
-
-        next_page_token = playlist_response.get("nextPageToken")
-        if not next_page_token:
-            break
-
-    return videos
-
-def fetch_youtube_playlist_info(api_key, playlist_id):
-    youtube = build("youtube", "v3", developerKey=api_key)
-    request = youtube.playlists().list(
-        part="snippet,contentDetails",
-        id=playlist_id
-    )
-    response = request.execute()
-    item = response["items"][0]
-    
-    title = item["snippet"].get("title", "No Title")
-    description = item["snippet"].get("description", "").strip() or "No description available"
-    published_at = item["snippet"].get("publishedAt", "")
-    channel_id = item["snippet"].get("channelId", "")
-    channel_title = item["snippet"].get("channelTitle", "")
-    thumbnails = item["snippet"].get("thumbnails", {})
-    playlist_link = f"https://www.youtube.com/playlist?list={playlist_id}"
-    
-    localized_title = item["snippet"]["localized"].get("title", "No Localized Title")
-    localized_description = item["snippet"]["localized"].get("description", "No Localized Description")
-
-    return {
-        "identifier": playlist_id,
-        "blueprint": "youtube_playlist",
-        "properties": {
-            "title": title,
-            "link": playlist_link,
-            "description": description,
-            "publishedAt": published_at,
-            "channelId": channel_id,
-            "channelTitle": channel_title,
-            "thumbnails": {
-                "default": thumbnails.get("default", {}).get("url", ""),
-                "medium": thumbnails.get("medium", {}).get("url", ""),
-                "high": thumbnails.get("high", {}).get("url", ""),
-                "standard": thumbnails.get("standard", {}).get("url", "")
-            },
-            "localized": {
-                "title": localized_title,
-                "description": localized_description
-            }
-        }
-    }
-
-def main():
-    playlist_data = fetch_youtube_playlist_info(YOUTUBE_API_KEY, PLAYLIST_ID)
-    videos_data = fetch_youtube_playlist_data(YOUTUBE_API_KEY, PLAYLIST_ID)
-    
-    # Combine Playlist and Video data for BULK_UPSERT
-    all_data = [playlist_data] + videos_data
-    with open("port_entities.json", "w") as f:
-        json.dump(all_data, f, indent=4)
-    logging.info("Fetched YouTube data and saved to port_entities.json")
-
-if __name__ == "__main__":
-    main()
-
-```
-   </details>
-
----
 
 
 ### Explanation of Workflow Steps
 
-1. **Check out the code**: Retrieves the repository code.
-2. **Set up Python**: Configures Python 3.9 environment.
-3. **Install dependencies**: Installs required packages from `requirements.txt`.
-4. **Run YouTube Data Fetch**: Runs `fetch_youtube_data.py` to retrieve YouTube data and prepare it for Port ingestion.
-5. **Bulk Create/Update Entities**: Uses Port’s GitHub action to bulk upsert the playlist and video data.
+1. **Create YouTube Catalog Automation Blueprint in Port**: This blueprint sets up the Port cataloging process to automate playlist and video ingestion.
+2. **Check out the code**: Retrieves the repository code from GitHub.
+3. **Install dependencies**: Installs `jq`, a tool for JSON processing, to handle YouTube API responses directly in the workflow.
+4. **Fetch YouTube Data and Prepare for Port**: Uses `curl` to retrieve YouTube playlist and video data, parses the data using `jq`, and converts it into JSON format compatible with Port’s data model.
+5. **Bulk Create/Update Entities**: Uses Port’s GitHub action to bulk upsert the combined playlist and video data into Port.
+6. **Inform Completion**: Sends a `PATCH_RUN` operation back to Port to mark the workflow as completed with a `SUCCESS` status, including a log message for tracking purposes.
 
 
 
