@@ -1,6 +1,4 @@
 
-# YouTube Playlist & Videos Catalog in Port
-
 This guide will help you set up an automated process to catalog YouTube playlist and video data into Port. Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port for easy tracking and visualization.
 
 ## Prerequisites
