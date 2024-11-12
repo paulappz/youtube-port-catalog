@@ -39,40 +39,94 @@ Define two blueprints in Port: `youtube_playlist` for playlists and `youtube_vid
     "identifier": "youtube_playlist",
     "title": "YouTube Playlist",
     "description": "Blueprint for YouTube Playlist",
+    "icon": "YouTube",
     "schema": {
-        "properties": {
-            "title": { "type": "string", "title": "Playlist Title" },
-            "link": { "type": "string", "title": "Playlist Link" },
-            "description": { "type": "string", "title": "Playlist Description" },
-            "publishedAt": { "type": "string", "title": "Publish Date" },
-            "channelId": { "type": "string", "title": "Channel ID" },
-            "channelTitle": { "type": "string", "title": "Channel Title" },
-            "thumbnails": {
-                "type": "object",
-                "title": "Thumbnails",
-                "properties": {
-                    "default": { "type": "string", "title": "Default Thumbnail" },
-                    "medium": { "type": "string", "title": "Medium Thumbnail" },
-                    "high": { "type": "string", "title": "High Thumbnail" },
-                    "standard": { "type": "string", "title": "Standard Thumbnail" }
-                }
-            },
-            "localized": {
-                "type": "object",
-                "title": "Localized Information",
-                "properties": {
-                    "title": { "type": "string", "title": "Localized Title" },
-                    "description": { "type": "string", "title": "Localized Description" }
-                }
-            }
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Playlist Title",
+          "description": "The title of the YouTube playlist."
         },
-        "required": ["title", "description", "publishedAt", "channelId", "channelTitle"]
+        "link": {
+          "type": "string",
+          "title": "Playlist Link",
+          "format": "url",
+          "description": "The URL link to the YouTube playlist."
+        },
+        "description": {
+          "type": "string",
+          "title": "Playlist Description",
+          "description": "A description of the YouTube playlist."
+        },
+        "publishedAt": {
+          "type": "string",
+          "title": "Publish Date",
+          "format": "date-time",
+          "description": "The date and time when the playlist was published."
+        },
+        "channelId": {
+          "type": "string",
+          "title": "Channel ID",
+          "description": "The ID of the YouTube channel that owns the playlist."
+        },
+        "channelTitle": {
+          "type": "string",
+          "title": "Channel Title",
+          "description": "The title of the YouTube channel that owns the playlist."
+        },
+        "thumbnails": {
+          "type": "object",
+          "title": "Thumbnails",
+          "description": "Various resolution thumbnails for the playlist.",
+          "properties": {
+            "default": {
+              "type": "string",
+              "title": "Default Thumbnail",
+              "description": "URL for the default thumbnail image."
+            },
+            "medium": {
+              "type": "string",
+              "title": "Medium Thumbnail",
+              "description": "URL for the medium-sized thumbnail image."
+            },
+            "high": {
+              "type": "string",
+              "title": "High Thumbnail",
+              "description": "URL for the high-resolution thumbnail image."
+            },
+            "standard": {
+              "type": "string",
+              "title": "Standard Thumbnail",
+              "description": "URL for the standard thumbnail image."
+            }
+          }
+        },
+        "localized": {
+          "type": "object",
+          "title": "Localized Information",
+          "description": "Localized title and description for different regions.",
+          "properties": {
+            "title": {
+              "type": "string",
+              "title": "Localized Title",
+              "description": "The localized title of the playlist."
+            },
+            "description": {
+              "type": "string",
+              "title": "Localized Description",
+              "description": "The localized description of the playlist."
+            }
+          }
+        }
+      },
+      "required": ["title", "description", "publishedAt", "channelId", "channelTitle"]
     },
     "mirrorProperties": {},
     "calculationProperties": {},
     "aggregationProperties": {},
     "relations": {}
-}
+  }
+  
 ```
    </details>
 
@@ -106,46 +160,113 @@ Define two blueprints in Port: `youtube_playlist` for playlists and `youtube_vid
     "identifier": "youtube_video",
     "title": "YouTube Video",
     "description": "Blueprint for YouTube Video",
+    "icon": "YouTube",
     "schema": {
-        "properties": {
-            "title": { "type": "string", "title": "Video Title" },
-            "link": { "type": "string", "title": "Video Link" },
-            "duration": { "type": "string", "title": "Video Duration" },
-            "description": { "type": "string", "title": "Video Description" },
-            "publishedAt": { "type": "string", "title": "Publish Date" },
-            "position": { "type": "number", "title": "Position in Playlist" },
-            "likes": { "type": "number", "title": "Like Count" },
-            "views": { "type": "number", "title": "View Count" },
-            "comments": { "type": "number", "title": "Comment Count" },
-            "thumbnails": {
-                "type": "object",
-                "title": "Thumbnails",
-                "properties": {
-                    "default": { "type": "string", "title": "Default Thumbnail" },
-                    "medium": { "type": "string", "title": "Medium Thumbnail" },
-                    "high": { "type": "string", "title": "High Thumbnail" },
-                    "standard": { "type": "string", "title": "Standard Thumbnail" },
-                    "maxres": { "type": "string", "title": "Max Resolution Thumbnail" }
-                }
-            },
-            "videoOwnerChannelTitle": { "type": "string", "title": "Channel Title" },
-            "videoOwnerChannelId": { "type": "string", "title": "Channel ID" }
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Video Title",
+          "description": "The title of the YouTube video."
         },
-        "required": ["title", "description", "publishedAt", "duration", "link"]
+        "link": {
+          "type": "string",
+          "title": "Video Link",
+          "format": "url",
+          "description": "The URL link to the YouTube video."
+        },
+        "duration": {
+          "type": "string",
+          "title": "Video Duration",
+          "description": "The duration of the YouTube video."
+        },
+        "description": {
+          "type": "string",
+          "title": "Video Description",
+          "description": "A description of the YouTube video."
+        },
+        "publishedAt": {
+          "type": "string",
+          "title": "Publish Date",
+          "format": "date-time",
+          "description": "The date and time when the video was published."
+        },
+        "position": {
+          "type": "number",
+          "title": "Position in Playlist",
+          "description": "The video's position in the playlist."
+        },
+        "likes": {
+          "type": "number",
+          "title": "Like Count",
+          "description": "The number of likes on the video."
+        },
+        "views": {
+          "type": "number",
+          "title": "View Count",
+          "description": "The number of views on the video."
+        },
+        "comments": {
+          "type": "number",
+          "title": "Comment Count",
+          "description": "The number of comments on the video."
+        },
+        "thumbnails": {
+          "type": "object",
+          "title": "Thumbnails",
+          "description": "Various resolution thumbnails for the video.",
+          "properties": {
+            "default": {
+              "type": "string",
+              "title": "Default Thumbnail",
+              "description": "URL for the default thumbnail image."
+            },
+            "medium": {
+              "type": "string",
+              "title": "Medium Thumbnail",
+              "description": "URL for the medium-sized thumbnail image."
+            },
+            "high": {
+              "type": "string",
+              "title": "High Thumbnail",
+              "description": "URL for the high-resolution thumbnail image."
+            },
+            "standard": {
+              "type": "string",
+              "title": "Standard Thumbnail",
+              "description": "URL for the standard thumbnail image."
+            },
+            "maxres": {
+              "type": "string",
+              "title": "Max Resolution Thumbnail",
+              "description": "URL for the maximum resolution thumbnail image."
+            }
+          }
+        },
+        "videoOwnerChannelTitle": {
+          "type": "string",
+          "title": "Channel Title",
+          "description": "The title of the channel that owns the video."
+        },
+        "videoOwnerChannelId": {
+          "type": "string",
+          "title": "Channel ID",
+          "description": "The ID of the channel that owns the video."
+        }
+      },
+      "required": ["title", "description", "publishedAt", "duration", "link"]
     },
     "mirrorProperties": {},
     "calculationProperties": {},
     "aggregationProperties": {},
     "relations": {
-        "playlist": {
-            "title": "Playlist",
-            "many": false,
-            "target": "youtube_playlist",
-            "required": true
-        }
+      "playlist": {
+        "title": "Playlist",
+        "many": false,
+        "target": "youtube_playlist",
+        "required": true
+      }
     }
-}
-
+  }
 
 ```
    </details>
