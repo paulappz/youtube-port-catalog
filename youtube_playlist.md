@@ -281,7 +281,7 @@ The following GitHub workflow automates fetching data from YouTube and updating 
 ### GitHub Workflow (`.github/workflows/youtube_port_workflow.yml`)
 
 <details>
-<summary><b>
+<summary><b> GitHub Workflow  (click to expand)</b></summary>
 
 ```yaml showLineNumbers
 name: Update YouTube Playlist and Video Entities in Port
