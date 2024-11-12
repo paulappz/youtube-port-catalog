@@ -428,7 +428,7 @@ jobs:
           operation: PATCH_RUN
           status: "SUCCESS"
           runId: ${{fromJson(inputs.port_context).runId}}
-          logMessage: "Created github secret ${{ github.event.inputs.secret_key }}"
+          logMessage: "Youtube Data created/Updated ${{ github.event.inputs.secret_key }}"
 ```
 
 </details>
