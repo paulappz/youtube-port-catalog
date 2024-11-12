@@ -296,47 +296,30 @@ Here’s an example of what you would see on Port when trying to create blueprin
 ## Step 2: GitHub Workflow for Data Ingestion
 
 
-### Create a Port action using the following JSON definition:
+### Create a Youtube Catalog Blueprint using the following JSON definition:
 
 ```yaml showLineNumbers
 {
-  "identifier": "create_youtube_catalog",
-  "title": "Create Youtube Catalog",
+  "identifier": "youtubecatalog",
+  "title": "YouTubeCatalogAutomation",
   "icon": "Github",
-  "description": "Automate Youtube Catalog Workflow",
-  "trigger": {
-    "type": "self-service",
-    "operation": "CREATE",
-    "userInputs": {
-      "properties": {
-        "service_name": {
-          "icon": "DefaultProperty",
-          "title": "  Service Name",
-          "type": "string"
-        }
-      },
-      "required": [
-        "service_name"
-      ]
-    },
-    "blueprintIdentifier": "youtubecatalog"
-  },
-  "invocationMethod": {
-    "type": "GITHUB",
-    "org": "paulappz",
-    "repo": "port-documentation",
-    "workflow": "port-youtube-ingest.yml",
-    "workflowInputs": {
-      "port_context": {
-        "entity": "{{.entity}}",
-        "blueprint": "{{.action.blueprint}}",
-        "runId": "{{.run.id}}",
-        "trigger": "{{ .trigger }}"
+  "schema": {
+    "properties": {
+      "service_name": {
+        "icon": "Github",
+        "title": "Service Name",
+        "type": "string",
+        "description": "All Uppercase"
       }
     },
-    "reportWorkflowStatus": true
+    "required": [
+      "service_name"
+    ]
   },
-  "requiredApproval": false
+  "mirrorProperties": {},
+  "calculationProperties": {},
+  "aggregationProperties": {},
+  "relations": {}
 }
 ```
 
