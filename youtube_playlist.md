@@ -203,7 +203,7 @@ Here’s an example of what you would see on Port when trying to create blueprin
   "invocationMethod": {
     "type": "GITHUB",
     "org": "paulappz",
-    "repo": "port-doc",
+    "repo": "port-documentation",
     "workflow": "port-youtube-ingest.yml",
     "workflowInputs": {
       "port_context": {
@@ -253,7 +253,7 @@ Here’s an example of what you would see on Port when trying to create blueprin
   "invocationMethod": {
     "type": "GITHUB",
     "org": "paulappz",
-    "repo": "port-doc",
+    "repo": "port-documentation",
     "workflow": "port-youtube-ingest.yml",
     "workflowInputs": {
       "port_context": {
