@@ -2,37 +2,91 @@
     "identifier": "youtube_playlist",
     "title": "YouTube Playlist",
     "description": "Blueprint for YouTube Playlist",
+    "icon": "YouTube",
     "schema": {
-        "properties": {
-            "title": { "type": "string", "title": "Playlist Title" },
-            "link": { "type": "string", "title": "Playlist Link", "format": "url" },
-            "description": { "type": "string", "title": "Playlist Description" },
-            "publishedAt": { "type": "string", "title": "Publish Date","format": "date-time" },
-            "channelId": { "type": "string", "title": "Channel ID" },
-            "channelTitle": { "type": "string", "title": "Channel Title" },
-            "thumbnails": {
-                "type": "object",
-                "title": "Thumbnails",
-                "properties": {
-                    "default": { "type": "string", "title": "Default Thumbnail" },
-                    "medium": { "type": "string", "title": "Medium Thumbnail" },
-                    "high": { "type": "string", "title": "High Thumbnail" },
-                    "standard": { "type": "string", "title": "Standard Thumbnail" }
-                }
-            },
-            "localized": {
-                "type": "object",
-                "title": "Localized Information",
-                "properties": {
-                    "title": { "type": "string", "title": "Localized Title" },
-                    "description": { "type": "string", "title": "Localized Description" }
-                }
-            }
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Playlist Title",
+          "description": "The title of the YouTube playlist."
         },
-        "required": ["title", "description", "publishedAt", "channelId", "channelTitle"]
+        "link": {
+          "type": "string",
+          "title": "Playlist Link",
+          "format": "url",
+          "description": "The URL link to the YouTube playlist."
+        },
+        "description": {
+          "type": "string",
+          "title": "Playlist Description",
+          "description": "A description of the YouTube playlist."
+        },
+        "publishedAt": {
+          "type": "string",
+          "title": "Publish Date",
+          "format": "date-time",
+          "description": "The date and time when the playlist was published."
+        },
+        "channelId": {
+          "type": "string",
+          "title": "Channel ID",
+          "description": "The ID of the YouTube channel that owns the playlist."
+        },
+        "channelTitle": {
+          "type": "string",
+          "title": "Channel Title",
+          "description": "The title of the YouTube channel that owns the playlist."
+        },
+        "thumbnails": {
+          "type": "object",
+          "title": "Thumbnails",
+          "description": "Various resolution thumbnails for the playlist.",
+          "properties": {
+            "default": {
+              "type": "string",
+              "title": "Default Thumbnail",
+              "description": "URL for the default thumbnail image."
+            },
+            "medium": {
+              "type": "string",
+              "title": "Medium Thumbnail",
+              "description": "URL for the medium-sized thumbnail image."
+            },
+            "high": {
+              "type": "string",
+              "title": "High Thumbnail",
+              "description": "URL for the high-resolution thumbnail image."
+            },
+            "standard": {
+              "type": "string",
+              "title": "Standard Thumbnail",
+              "description": "URL for the standard thumbnail image."
+            }
+          }
+        },
+        "localized": {
+          "type": "object",
+          "title": "Localized Information",
+          "description": "Localized title and description for different regions.",
+          "properties": {
+            "title": {
+              "type": "string",
+              "title": "Localized Title",
+              "description": "The localized title of the playlist."
+            },
+            "description": {
+              "type": "string",
+              "title": "Localized Description",
+              "description": "The localized description of the playlist."
+            }
+          }
+        }
+      },
+      "required": ["title", "description", "publishedAt", "channelId", "channelTitle"]
     },
     "mirrorProperties": {},
     "calculationProperties": {},
     "aggregationProperties": {},
     "relations": {}
-}
+  }
+  

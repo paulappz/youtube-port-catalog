@@ -2,8 +2,12 @@ name: Update YouTube Playlist and Video Entities in Port
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]  
+    inputs:
+      port_context:
+        required: false
+        description:
+          Who triggered the action and general context (blueprint, run id, etc...)
+        type: string 
 
 jobs:
   update_port_entities:
@@ -12,26 +16,113 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y jq
 
-      - name: Run YouTube Data Fetch and Prepare Port Entities
+      - name: Fetch YouTube Playlist and Video Data
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: python fetch_youtube_data.py
-
-      - name: Read Port Entities JSON
-        id: read_json
         run: |
-          cat port_entities.json
-          echo "entities=$(cat port_entities.json | jq -c .)" >> $GITHUB_ENV
+          PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
+          
+          # Fetch playlist details
+          playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+          playlist_title=$(echo $playlist_response | jq -r '.items[0].snippet.title')
+          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')
+          playlist_published_at=$(echo $playlist_response | jq -r '.items[0].snippet.publishedAt')
+          playlist_channel_id=$(echo $playlist_response | jq -r '.items[0].snippet.channelId')
+          playlist_channel_title=$(echo $playlist_response | jq -r '.items[0].snippet.channelTitle')
+          playlist_link="https://www.youtube.com/playlist?list=$PLAYLIST_ID"
+
+          # Save playlist data in JSON format compatible with Port
+          playlist_json=$(jq -n --arg id "$PLAYLIST_ID" \
+                              --arg title "$playlist_title" \
+                              --arg link "$playlist_link" \
+                              --arg description "$playlist_description" \
+                              --arg publishedAt "$playlist_published_at" \
+                              --arg channelId "$playlist_channel_id" \
+                              --arg channelTitle "$playlist_channel_title" \
+                              '{
+                                identifier: $id,
+                                blueprint: "youtube_playlist",
+                                title: $title,
+                                properties: {
+                                  title: $title,
+                                  link: $link,
+                                  description: $description,
+                                  publishedAt: $publishedAt,
+                                  channelId: $channelId,
+                                  channelTitle: $channelTitle
+                                }
+                              }')
+
+          # Initialize combined JSON array with the playlist as the first element
+          combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
+
+          # Fetch video details for each video in the playlist
+          video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+
+          # Function to convert ISO 8601 duration to H:MM:SS format
+          convert_duration() {
+            local duration=$1
+            local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
+            local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
+            local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
+            printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
+          }
+
+          # Loop through each video, gather details, and format JSON for Port
+          for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
+            video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
+
+            title=$(echo $video_response | jq -r '.items[0].snippet.title')
+            description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
+            publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
+            raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
+            duration=$(convert_duration $raw_duration)
+            likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
+            views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
+            comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
+            link="https://www.youtube.com/watch?v=$video_id"
+
+            video_json=$(jq -n --arg id "$video_id" \
+                               --arg title "$title" \
+                               --arg link "$link" \
+                               --arg description "$description" \
+                               --arg publishedAt "$publishedAt" \
+                               --arg duration "$duration" \
+                               --arg likes "$likes" \
+                               --arg views "$views" \
+                               --arg comments "$comments" \
+                               --arg playlist_id "$PLAYLIST_ID" \
+                               '{
+                                 identifier: $id,
+                                 blueprint: "youtube_video",
+                                 title: $title,
+                                 properties: {
+                                   title: $title,
+                                   link: $link,
+                                   description: $description,
+                                   publishedAt: $publishedAt,
+                                   duration: $duration,
+                                   likes: $likes,
+                                   views: $views,
+                                   comments: $comments
+                                 },
+                                 relations: {
+                                   playlist: $playlist_id
+                                 }
+                               }')
+
+            # Append each video JSON to the combined JSON array
+            combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
+          done
+
+          # Save the combined JSON array to the environment variable for Port
+          echo $combined_json > port_entities.json
+          echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
 
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         uses: port-labs/port-github-action@v1
@@ -41,3 +132,14 @@ jobs:
           baseUrl: https://api.getport.io
           operation: BULK_UPSERT
           entities: ${{ env.entities }}
+
+      - name: Inform completion of request to Create / Update Catalog in Port
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: "SUCCESS"
+          runId: ${{fromJson(inputs.port_context).runId}}
+          logMessage: "Created github secret ${{ github.event.inputs.secret_key }}"
