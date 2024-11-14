@@ -48,10 +48,11 @@ jobs:
                                 identifier: $id,
                                 blueprint: "youtube_playlist",
                                 title: $title,
+                                description: $description,
                                 properties: {
-                                  title: $title,
+                                  playlistTitle: $title,
                                   link: $link,
-                                  description: $description,
+                                  playlistDescription: $description,
                                   publishedAt: $publishedAt,
                                   channelId: $channelId,
                                   channelTitle: $channelTitle
@@ -101,10 +102,11 @@ jobs:
                                  identifier: $id,
                                  blueprint: "youtube_video",
                                  title: $title,
+                                 description:$title
                                  properties: {
-                                   title: $title,
+                                   videoTitle: $title,
                                    link: $link,
-                                   description: $description,
+                                   videoDescription: $description,
                                    publishedAt: $publishedAt,
                                    duration: $duration,
                                    likes: $likes,
@@ -142,4 +144,4 @@ jobs:
           operation: PATCH_RUN
           status: "SUCCESS"
           runId: ${{fromJson(inputs.port_context).runId}}
-          logMessage: "Youtube Data created/Updated ${{ github.event.inputs.secret_key }}"
+          logMessage: "Youtube Data created/Updated Successfully"
