@@ -483,7 +483,7 @@ Users can execute the action from the Port UI.
 The following GitHub workflow automates fetching data from YouTube and updating Port with the data.
 
 
-# GitHub Actions Workflow Guide
+### GitHub Actions Workflow Guide
 
 1. Create `.github/workflows` in your repository.
 
