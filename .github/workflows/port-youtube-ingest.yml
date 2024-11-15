@@ -34,7 +34,7 @@ jobs:
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
           playlist_title=$(echo $playlist_response | jq -r '.items[0].snippet.title')
-          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')
+          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')  # Handle empty description
           playlist_published_at=$(echo $playlist_response | jq -r '.items[0].snippet.publishedAt')
           playlist_channel_id=$(echo $playlist_response | jq -r '.items[0].snippet.channelId')
           playlist_channel_title=$(echo $playlist_response | jq -r '.items[0].snippet.channelTitle')
@@ -98,10 +98,10 @@ jobs:
             video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
             title=$(echo $video_response | jq -r '.items[0].snippet.title')
-            description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
+            description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')  # Handle empty description
             publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
             raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
-            duration=$(convert_duration $raw_duration)
+            duration=$(convert_duration $raw_duration)  # Convert duration to H:MM:SS format
             likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
             views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
             comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
@@ -114,43 +114,43 @@ jobs:
             video_thumbnails_standard=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.standard.url')
 
             video_json=$(jq -n --arg id "$video_id" \
-                                --arg title "$title" \
-                                --arg link "$link" \
-                                --arg description "$description" \
-                                --arg publishedAt "$publishedAt" \
-                                --arg duration "$duration" \
-                                --arg likes "$likes" \
-                                --arg views "$views" \
-                                --arg comments "$comments" \
-                                --arg playlist_id "$PLAYLIST_ID" \
-                                --arg default_thumbnail "$video_thumbnails_default" \
-                                --arg medium_thumbnail "$video_thumbnails_medium" \
-                                --arg high_thumbnail "$video_thumbnails_high" \
-                                --arg standard_thumbnail "$video_thumbnails_standard" \
-                                '{
-                                  identifier: $id,
-                                  blueprint: "youtube_video",
-                                  title: $title,
-                                  description:$description,
-                                  properties: {
-                                    link: $link,
-                                    videoDescription: $description,
-                                    publishedAt: $publishedAt,
-                                    duration: $duration,
-                                    likes: $likes,
-                                    views: $views,
-                                    comments: $comments,
-                                    thumbnails: {
-                                      default: $default_thumbnail,
-                                      medium: $medium_thumbnail,
-                                      high: $high_thumbnail,
-                                      standard: $standard_thumbnail
-                                    }
-                                  },
-                                  relations: {
-                                    playlist: $playlist_id
-                                  }
-                                }')
+                               --arg title "$title" \
+                               --arg link "$link" \
+                               --arg description "$description" \
+                               --arg publishedAt "$publishedAt" \
+                               --arg duration "$duration" \
+                               --arg likes "$likes" \
+                               --arg views "$views" \
+                               --arg comments "$comments" \
+                               --arg playlist_id "$PLAYLIST_ID" \
+                               --arg default_thumbnail "$video_thumbnails_default" \
+                               --arg medium_thumbnail "$video_thumbnails_medium" \
+                               --arg high_thumbnail "$video_thumbnails_high" \
+                               --arg standard_thumbnail "$video_thumbnails_standard" \
+                               '{
+                                 identifier: $id,
+                                 blueprint: "youtube_video",
+                                 title: $title,
+                                 description:$description,
+                                 properties: {
+                                   link: $link,
+                                   videoDescription: $description,
+                                   publishedAt: $publishedAt,
+                                   duration: $duration,
+                                   likes: $likes,
+                                   views: $views,
+                                   comments: $comments,
+                                   thumbnails: {
+                                     default: $default_thumbnail,
+                                     medium: $medium_thumbnail,
+                                     high: $high_thumbnail,
+                                     standard: $standard_thumbnail
+                                   }
+                                 },
+                                 relations: {
+                                   playlist: $playlist_id
+                                 }
+                               }')
 
             # Append each video JSON to the combined JSON array
             combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
