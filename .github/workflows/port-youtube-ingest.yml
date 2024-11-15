@@ -18,12 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+          apt-get update
+          apt-get install -y jq
 
       - name: Fetch YouTube Playlist and Video Data
         env:
@@ -91,7 +91,7 @@ jobs:
           video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
       
           # Loop through each video, gather details, and format JSON for Port
-          for video_item in $(echo $video_data | jq -r '.items[]'); do
+          for video_item in $(echo $video_data | jq -c '.items[]'); do
             video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
             position=$(echo $video_item | jq -r '.snippet.position')
             
