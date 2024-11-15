@@ -31,6 +31,15 @@ jobs:
         run: |
           PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
           
+          # Function to convert ISO 8601 duration to H:MM:SS format
+          convert_duration() {
+            local duration=$1
+            local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
+            local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
+            local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
+            printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
+          }
+          
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
           
@@ -70,7 +79,6 @@ jobs:
                                 title: $title,
                                 description: $description,
                                 properties: {
-                                  playlistTitle: $title,
                                   link: $link,
                                   playlistDescription: $description,
                                   publishedAt: $publishedAt,
@@ -108,7 +116,7 @@ jobs:
               raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
               
               # Convert ISO 8601 duration (e.g., PT3M47S) to "3:47"
-              duration=$(echo $raw_duration | sed -E 's/^PT([0-9]+)H([0-9]+)M([0-9]+)S/\1:\2:\3/;s/^PT([0-9]+)M([0-9]+)S/\1:\2/;s/^PT([0-9]+)H([0-9]+)M/\1:\2/;s/^PT([0-9]+)M/\1:00/;s/^PT([0-9]+)H/\1:00:00/')
+              duration=$(convert_duration $raw_duration)
               
               likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
               views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
@@ -149,7 +157,6 @@ jobs:
                                     title: $title,
                                     description: $description,
                                     properties: {
-                                      videoTitle: $title,
                                       link: $link,
                                       videoDescription: $description,
                                       publishedAt: $publishedAt,
