@@ -76,6 +76,7 @@ jobs:
                                 identifier: $id,
                                 blueprint: "youtube_playlist",
                                 title: $title,
+                                description: $description,
                                 properties: {
                                   link: $link,
                                   playlistDescription: $description,
@@ -105,7 +106,9 @@ jobs:
             description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
             publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
             raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
-            duration=$(python3 -c "from __future__ import print_function; import sys; sys.stdout.write('$raw_duration\n')")  # Ensure duration is correctly passed to the Python conversion
+            
+            duration=$(echo $raw_duration | sed -E 's/^PT([0-9]+)H([0-9]+)M([0-9]+)S/\1:\2:\3/;s/^PT([0-9]+)M([0-9]+)S/\1:\2/;s/^PT([0-9]+)H([0-9]+)M/\1:\2/;s/^PT([0-9]+)M/\1:00/;s/^PT([0-9]+)H/\1:00:00/')
+
             likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
             views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
             comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
@@ -117,6 +120,8 @@ jobs:
             video_thumbnails_high=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
             video_thumbnails_standard=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
 
+            videoOwnerChannelTitle=$(echo $video_response | jq -r '.items[0].snippet.channelTitle // "No channel title"')
+            videoOwnerChannelId=$(echo $video_response | jq -r '.items[0].snippet.channelId // "No channel ID"')
             video_json=$(jq -n --arg id "$video_id" \
                                --arg title "$title" \
                                --arg link "$link" \
@@ -131,10 +136,13 @@ jobs:
                                --arg medium_thumbnail "$video_thumbnails_medium" \
                                --arg high_thumbnail "$video_thumbnails_high" \
                                --arg standard_thumbnail "$video_thumbnails_standard" \
+                               --arg videoOwnerChannelTitle "$videoOwnerChannelTitle" \
+                               --arg videoOwnerChannelId "$videoOwnerChannelId" \
                                '{
                                  identifier: $id,
                                  blueprint: "youtube_video",
                                  title: $title,
+                                 description:$description,
                                  properties: {
                                    link: $link,
                                    videoDescription: $description,
@@ -152,7 +160,9 @@ jobs:
                                  },
                                  relations: {
                                    playlist: $playlist_id
-                                 }
+                                 },
+                                 videoOwnerChannelTitle: $videoOwnerChannelTitle,
+                                 videoOwnerChannelId: $videoOwnerChannelId
                                }')
 
             # Append each video JSON to the combined JSON array
