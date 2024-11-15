@@ -33,14 +33,19 @@ jobs:
           
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
-          playlist_title=$(echo $playlist_response | jq -r '.items[0].snippet.title')
+      
+          # Check if the response contains valid JSON
+          if [[ ! $(echo "$playlist_response" | jq empty) ]]; then
+            echo "Error: Failed to parse the playlist response."
+            exit 1
+          fi
           
           # Handle playlist description: if empty or missing, return "No description available"
           playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')
           if [ -z "$playlist_description" ]; then
             playlist_description="No description available"
           fi
-      
+          
           # Check for localized description and title
           localized_title=$(echo $playlist_response | jq -r '.items[0].snippet.localized.title // empty')
           localized_description=$(echo $playlist_response | jq -r '.items[0].snippet.localized.description // empty')
