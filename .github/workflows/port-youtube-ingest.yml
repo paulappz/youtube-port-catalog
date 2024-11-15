@@ -53,10 +53,10 @@ jobs:
                                 identifier: $id,
                                 blueprint: "youtube_playlist",
                                 title: $title,
+                                description: $description,
                                 properties: {
-                                  title: $title,
                                   link: $link,
-                                  description: $description,
+                                  playlistDescription: $description,
                                   publishedAt: $publishedAt,
                                   channelId: $channelId,
                                   channelTitle: $channelTitle
@@ -106,10 +106,10 @@ jobs:
                                  identifier: $id,
                                  blueprint: "youtube_video",
                                  title: $title,
+                                 description:$title
                                  properties: {
-                                   title: $title,
                                    link: $link,
-                                   description: $description,
+                                   videoDescription: $description,
                                    publishedAt: $publishedAt,
                                    duration: $duration,
                                    likes: $likes,
@@ -130,6 +130,7 @@ jobs:
           echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
 
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
+        id: bulk_create_update
         uses: port-labs/port-github-action@v1
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
@@ -145,6 +146,6 @@ jobs:
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           baseUrl: https://api.getport.io
           operation: PATCH_RUN
-          status: "SUCCESS"
+          status: ${{ steps.bulk_create_update.outcome == 'success' && 'SUCCESS' || 'FAILURE' }}
           runId: ${{fromJson(inputs.port_context).runId}}
-          logMessage: "Youtube Data created/Updated ${{ github.event.inputs.secret_key }}"
+          logMessage: ${{ steps.bulk_create_update.outcome == 'success' && 'YouTube Data created/Updated Successfully' || 'Error in YouTube Data creation/update' }}
