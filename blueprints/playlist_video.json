@@ -96,9 +96,9 @@
       "link"
     ]
   },
-    "mirrorProperties": {},
-    "calculationProperties": {},
-    "aggregationProperties": {},
+  "mirrorProperties": {},
+  "calculationProperties": {},
+  "aggregationProperties": {},
   "relations": {
     "playlist": {
       "title": "Playlist",
