@@ -16,6 +16,10 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
   
 ## Step 1: Model Data in Port
 
+Data modeling in Port involves defining entities and their relationships to ensure consistent, structured data. 
+
+This step is crucial as it allows your system to understand and manage data efficiently, ensuring that different entities (like playlists and videos) interact seamlessly within workflows.
+
 ### Data model setup
 1. Navigate to your [Port Builder](https://app.getport.io/settings/data-model) page.
 2. Click the `+ Blueprint` button to create a new blueprint.
@@ -30,7 +34,11 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
 
 </details>
 
-4. Add the Deployment blueprints in JSON format.
+### Add Deployment blueprints.
+
+Adding blueprints in Port helps define the structure and relationships of your data entities. 
+
+For example, by adding the YouTube playlist and Youtube video blueprints, you can ensure that the necessary properties for each blueprint (like title, description, and link) are captured and organized consistently within the system. This enables better data management and interaction with APIs.
 
 <details>
 <summary>Youtube playlist blueprint (click to expand)</summary>
@@ -259,6 +267,9 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
   
 ## Step 2: GitHub Workflow for Data Ingestion
 
+A GitHub workflow for data ingestion automates the process of pulling data from external sources (like YouTube) and processing it for use within your application. 
+
+By defining this workflow, you ensure that the data ingestion process is consistent, automated, and integrated into your development pipeline. This helps in efficiently handling data updates and maintaining data quality.
 
 ### Create a Youtube Catalog Blueprint using JSON definition.
 
