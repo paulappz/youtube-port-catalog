@@ -106,7 +106,7 @@ jobs:
                                  identifier: $id,
                                  blueprint: "youtube_video",
                                  title: $title,
-                                 description:$title
+                                 description:$description,
                                  properties: {
                                    link: $link,
                                    videoDescription: $description,
