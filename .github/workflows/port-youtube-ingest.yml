@@ -102,7 +102,7 @@ jobs:
             video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=$PLAYLIST_ID&pageToken=$nextPageToken&key=$YOUTUBE_API_KEY")
       
             # Loop through each video, gather details, and format JSON for Port
-            for video_item in $(echo $video_data | jq -c '.items[]'); do
+            for video_item in $(echo $video_data | jq -r '.items[]'); do
               video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
               position=$(echo $video_item | jq -r '.snippet.position')
               
@@ -192,7 +192,7 @@ jobs:
       
           # Save the combined JSON array to the environment variable for Port
           echo $combined_json > port_entities.json
-          echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
+          echo "entities=$(jq -r . port_entities.json)" >> $GITHUB_ENV
 
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         uses: port-labs/port-github-action@v1
