@@ -33,7 +33,7 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
 4. Add the Deployment blueprints in JSON format.
 
 <details>
-<summary>Deployment blueprint for `youtube_playlist` (click to expand)</summary>
+<summary>Youtube playlist blueprint (click to expand)</summary>
 
 ```json showLineNumbers
 {
