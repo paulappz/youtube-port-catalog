@@ -34,7 +34,7 @@ jobs:
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
           playlist_title=$(echo $playlist_response | jq -r '.items[0].snippet.title')
-          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')  # Handle empty description
+          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')
           playlist_published_at=$(echo $playlist_response | jq -r '.items[0].snippet.publishedAt')
           playlist_channel_id=$(echo $playlist_response | jq -r '.items[0].snippet.channelId')
           playlist_channel_title=$(echo $playlist_response | jq -r '.items[0].snippet.channelTitle')
@@ -98,10 +98,10 @@ jobs:
             video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
             title=$(echo $video_response | jq -r '.items[0].snippet.title')
-            description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')  # Handle empty description
+            description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
             publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
             raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
-            duration=$(convert_duration $raw_duration)  # Convert duration to H:MM:SS format
+            duration=$(convert_duration $raw_duration)
             likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
             views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
             comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
