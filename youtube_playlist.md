@@ -133,7 +133,7 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
 </details>
 
 <details>
-<summary>Deployment blueprint for `youtube_video` (click to expand)</summary>
+<summary>Youtube video blueprint (click to expand)</summary>
 
 ```json showLineNumbers
 {
