@@ -34,12 +34,6 @@ jobs:
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
-          # Check if the response is empty
-          if [ -z "$playlist_response" ]; then
-            echo "Error: The playlist response is empty."
-            exit 1
-          fi
-
           # Log the raw response for debugging
           echo "Raw playlist response: $playlist_response"
 
@@ -49,7 +43,7 @@ jobs:
             exit 1
           fi
 
-          # Extract playlist title and description using jq
+          # Extract playlist details
           playlist_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.title')
           playlist_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.description // "No description available"')
 
@@ -109,13 +103,16 @@ jobs:
                                 }
                               }')
 
+          # Log the playlist JSON for debugging
+          echo "Playlist JSON: $playlist_json"
+
           # Initialize combined JSON array with the playlist as the first element
           combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
 
           # Log the combined JSON for debugging
           echo "Combined JSON: $combined_json"
 
-          # Proceed with additional processing or saving combined_json to an environment variable for Port
+          # Save to Port or proceed with further actions
 
                     
           # Fetch video details for each video in the playlist
