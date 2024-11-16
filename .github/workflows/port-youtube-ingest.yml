@@ -29,6 +29,7 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
+          # Define Playlist ID
           PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
 
           # Fetch playlist details
@@ -106,14 +107,14 @@ jobs:
           # Log the playlist JSON to inspect
           echo "Playlist JSON: $playlist_json"
 
-          # Initialize combined JSON array with the playlist as the first element
-          combined_json=$(echo "[]" | jq --argjson playlist "$playlist_json" '. + [$playlist]')
-
-          # Log the combined JSON for debugging
-          echo "Combined JSON: $combined_json"
+          # Save playlist JSON into a file
+          echo $playlist_json > playlist_data.json
 
           # Fetch video details for each video in the playlist
           video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+
+          # Initialize a separate video JSON array
+          video_json_array="[]"
 
           # Loop through each video, gather details, and format JSON for Port
           for video_item in $(echo $video_data | jq -r '.items[]'); do
@@ -203,14 +204,17 @@ jobs:
                                   }
                                 }')
 
-            # Log the video JSON to inspect
-            echo "Video JSON: $video_json"
-
-            # Append each video JSON to the combined JSON array
-            combined_json=$(echo "$combined_json" | jq --argjson video "$video_json" '. + [$video]')
+            # Append the video JSON to the video JSON array
+            video_json_array=$(echo $video_json_array | jq --argjson video "$video_json" '. + [$video]')
           done
 
-          # Save the combined JSON to a file or pass to next steps in the workflow
+          # Combine playlist and video JSON arrays
+          combined_json=$(echo "$video_json_array" | jq --argjson playlist "$playlist_json" '. + [$playlist]')
+
+          # Log the final combined JSON
+          echo "Combined JSON: $combined_json"
+
+          # Save the combined JSON to a file
           echo $combined_json > combined_playlist.json
 
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
