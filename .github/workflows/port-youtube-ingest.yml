@@ -25,7 +25,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-      
       - name: Fetch YouTube Playlist and Video Data
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
@@ -68,7 +67,7 @@ jobs:
           playlist_channel_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
           playlist_link="https://www.youtube.com/playlist?list=$PLAYLIST_ID"
       
-          # Extract thumbnails URLs (ensure valid URLs or fallback to a default message)
+          # Extract thumbnails URLs
           playlist_thumbnails_default=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
           playlist_thumbnails_medium=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
           playlist_thumbnails_high=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
@@ -108,10 +107,10 @@ jobs:
       
           # Log the playlist JSON
           echo "Playlist JSON: $playlist_json"
-  
       
-          echo "playlist_json=$playlist_json" >> $GITHUB_ENV      
-
+          # Save playlist JSON into an environment variable
+          echo "entities=$playlist_json" >> $GITHUB_ENV
+      
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         id: bulk_create_update
         uses: port-labs/port-github-action@v1
@@ -121,7 +120,7 @@ jobs:
           baseUrl: https://api.getport.io
           operation: BULK_UPSERT
           entities: ${{ env.entities }}
-
+      
       - name: Inform completion of request to Create / Update Catalog in Port
         uses: port-labs/port-github-action@v1
         with:
@@ -132,3 +131,4 @@ jobs:
           status: ${{ steps.bulk_create_update.outcome == 'success' && 'SUCCESS' || 'FAILURE' }}
           runId: ${{fromJson(inputs.port_context).runId}}
           logMessage: ${{ steps.bulk_create_update.outcome == 'success' && 'YouTube Data created/Updated Successfully' || 'Error in YouTube Data creation/update' }}
+      
