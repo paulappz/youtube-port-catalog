@@ -148,15 +148,9 @@ jobs:
               # Fetch video details for each video in the playlist
               video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
                                   
-                    # # Loop through each video, gather details, and format JSON for Port
+                    # Loop through each video, gather details, and format JSON for Port
                     for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
-                    #   # position=$(echo "$video_id" | jq -r '.snippet.position')
-                    #   position=$(echo $video_id | jq -r '.snippet.position')  # Added position here
-
-                        # Loop through each video item in the playlist
-                    # for video_item in $(echo "$video_data" | jq -r '.items[]'); do
-                    # video_id=$(echo "$video_item" | jq -r '.contentDetails.videoId')
-                    # position=$(echo "$video_item" | jq -r '.snippet.position')
+                      position=$(echo $video_item | jq -r '.snippet.position')  # Added position here
 
                       video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
@@ -200,7 +194,7 @@ jobs:
             --arg likes "$likes" \
             --arg views "$views" \
             --arg comments "$comments" \
-            # --arg position "$position" \
+            --arg position "$position" \
             --arg playlist_id "$PLAYLIST_ID" \
             --arg videoOwnerChannelTitle "$videoOwnerChannelTitle" \
             --arg videoOwnerChannelId "$videoOwnerChannelId" \
@@ -220,6 +214,7 @@ jobs:
                 likes: $likes,
                 views: $views,
                 comments: $comments,
+                position: $position,
                 videoOwnerChannelTitle: $videoOwnerChannelTitle,
                 videoOwnerChannelId: $videoOwnerChannelId,
                 thumbnails: {
