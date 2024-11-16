@@ -67,7 +67,7 @@ jobs:
           playlist_channel_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
           playlist_link="https://www.youtube.com/playlist?list=$PLAYLIST_ID"
       
-          # Extract thumbnails URLs
+          # Extract thumbnails URLs (ensure valid URLs or fallback to a default message)
           playlist_thumbnails_default=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
           playlist_thumbnails_medium=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
           playlist_thumbnails_high=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
@@ -107,9 +107,15 @@ jobs:
       
           # Log the playlist JSON
           echo "Playlist JSON: $playlist_json"
-
-          # Save playlist JSON into an environment variable
-          echo "entities=[${playlist_json}]" >> $GITHUB_ENV
+      
+          # Initialize combined JSON array with the playlist as the first element
+          combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
+      
+          # Save the combined JSON to port_entities.json
+          echo $combined_json > port_entities.json
+      
+          # Save the combined JSON to the environment variable
+          echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
       
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         id: bulk_create_update
