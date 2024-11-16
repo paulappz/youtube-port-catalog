@@ -145,33 +145,49 @@ jobs:
 
             PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
 
-            # Fetch video details for each video in the playlist
-            video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=2&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+            # # Fetch video details for each video in the playlist
+            # video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=2&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
-            # Log the video data response to debug
-            echo "Raw video_data response: $video_data"
+            # # Log the video data response to debug
+            # echo "Raw video_data response: $video_data"
 
-            # Ensure video data is valid and contains items
-            if [ "$(echo $video_data | jq '.items | length')" -eq 0 ]; then
-              echo "No videos found for the playlist."
-              exit 1
-            fi
+            # # Ensure video data is valid and contains items
+            # if [ "$(echo $video_data | jq '.items | length')" -eq 0 ]; then
+            #   echo "No videos found for the playlist."
+            #   exit 1
+            # fi
 
-            # Loop through each video, gather details, and format JSON for Port
-            for video_item in $(echo "$video_data" | jq -r '.items[]'); do
-              video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
-              position=$(echo $video_item | jq -r '.snippet.position')
+            # # Loop through each video, gather details, and format JSON for Port
+            # for video_item in $(echo "$video_data" | jq -r '.items[]'); do
+            #   video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
+            #   position=$(echo $video_item | jq -r '.snippet.position')
 
-              # Log the video ID and position for debugging
-              echo "Processing video ID: $video_id, Position: $position"
+            #   # Log the video ID and position for debugging
+            #   echo "Processing video ID: $video_id, Position: $position"
 
-              video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
+            #   video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
-              # Ensure video response is valid JSON
-              if ! echo "$video_response" | jq empty; then
-                echo "Error: The video response is not valid JSON or is empty for video ID $video_id."
-                continue
-              fi
+            #   # Ensure video response is valid JSON
+            #   if ! echo "$video_response" | jq empty; then
+            #     echo "Error: The video response is not valid JSON or is empty for video ID $video_id."
+            #     continue
+            #   fi
+
+                        # Fetch video details for each video in the playlist
+              video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+              
+              # Function to convert ISO 8601 duration to H:MM:SS format
+              convert_duration() {
+                local duration=$1
+                local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
+                local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
+                local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
+                printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
+              }
+                            
+              # Loop through each video, gather details, and format JSON for Port
+              for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
+                video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
               # Extract video details
               title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
