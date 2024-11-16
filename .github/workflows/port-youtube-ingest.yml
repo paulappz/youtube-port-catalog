@@ -144,39 +144,30 @@ jobs:
         run: |
 
             PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
-            # Fetch video details for each video in the playlist
-            video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=5&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+              # Fetch video details for each video in the playlist
+            video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=2&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
             # Log the video data response to debug
             echo "Raw video_data response: $video_data"
 
-            # Ensure video data is valid and contains items
-            if [ "$(echo $video_data | jq '.items | length')" -eq 0 ]; then
-              echo "No videos found for the playlist."
+            # Ensure the response is valid JSON and contains items
+            if [ "$(echo "$video_data" | jq '.items | length')" -eq 0 ]; then
+              echo "No videos found for the playlist or the response is empty."
               exit 1
             fi
 
-            # Function to convert ISO 8601 duration to H:MM:SS format
-            convert_duration() {
-              local duration=$1
-              local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
-              local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
-              local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
-              printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
-            }
-
             # Loop through each video, gather details, and format JSON for Port
-            for video_item in $(echo $video_data | jq -r '.items[]'); do
+            for video_item in $(echo "$video_data" | jq -r '.items[]'); do
               video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
-              position=$(echo $video_item | jq -r '.snippet.position')  # Added position here
+              position=$(echo $video_item | jq -r '.snippet.position')
 
               # Log the video ID and position for debugging
               echo "Processing video ID: $video_id, Position: $position"
 
               video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
-              # Log the raw video response
-              echo "video_response: $video_response"
+              # Log the raw video response for debugging
+              echo "Raw video response: $video_response"
 
               # Ensure video response is valid JSON
               if ! echo "$video_response" | jq empty; then
@@ -205,7 +196,7 @@ jobs:
               video_thumbnails_high=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
               video_thumbnails_standard=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
 
-              # Log the extracted data
+              # Log the extracted video details
               echo "Title: $title"
               echo "Description: $description"
               echo "Published At: $publishedAt"
