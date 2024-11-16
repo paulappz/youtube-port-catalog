@@ -9,10 +9,6 @@ on:
           Who triggered the action and general context (blueprint, run id, etc...)
         type: string 
 
-  push:
-    branches:
-      - 'test'    # Runs on test branch
-
 jobs:
   update_port_entities:
     runs-on: ubuntu-latest
@@ -41,18 +37,18 @@ jobs:
 
           item=$(echo "$playlist_response" | jq -r '.items[0]')
           playlist_id=$(echo "$item" | jq -r '.id')
-          playlist_title=$(echo "$item" | jq -r '.snippet.title')
-          playlist_description=$(echo "$item" | jq -r '.snippet.description // "No description available" | select(length > 0) | select(trim | length > 0) or "No description available"')
-          published_at=$(echo "$item" | jq -r '.snippet.publishedAt')
-          channel_id=$(echo "$item" | jq -r '.snippet.channelId')
-          channel_title=$(echo "$item" | jq -r '.snippet.channelTitle')
+          playlist_title=$(echo "$item" | jq -r '.snippet.title // "No title available"')
+          playlist_description=$(echo "$item" | jq -r '.snippet.description // "No description available" | gsub("^\\s+|\\s+$"; "") | select(length > 0) or "No description available"')
+          published_at=$(echo "$item" | jq -r '.snippet.publishedAt // "No published date available"')
+          channel_id=$(echo "$item" | jq -r '.snippet.channelId // "No channel ID available"')
+          channel_title=$(echo "$item" | jq -r '.snippet.channelTitle // "No channel title available"')
           thumbnails_default=$(echo "$item" | jq -r '.snippet.thumbnails.default.url // "No thumbnail available"')
           thumbnails_medium=$(echo "$item" | jq -r '.snippet.thumbnails.medium.url // "No thumbnail available"')
           thumbnails_high=$(echo "$item" | jq -r '.snippet.thumbnails.high.url // "No thumbnail available"')
           thumbnails_standard=$(echo "$item" | jq -r '.snippet.thumbnails.standard.url // "No thumbnail available"')
           thumbnails_maxres=$(echo "$item" | jq -r '.snippet.thumbnails.maxres.url // "No thumbnail available"')
           localized_title=$(echo "$item" | jq -r '.snippet.localized.title // "No Localized Title"')
-          localized_description=$(echo "$item" | jq -r '.snippet.localized.description // "No Localized Description" | select(length > 0) | select(trim | length > 0) or "No Localized Description"')
+          localized_description=$(echo "$item" | jq -r '.snippet.localized.description // "No Localized Description" | gsub("^\\s+|\\s+$"; "") | select(length > 0) or "No Localized Description"')
 
           playlist_json=$(echo "{}" | jq \
             --arg identifier "$playlist_id" \
@@ -116,7 +112,7 @@ jobs:
               comments=$(echo "$video_details" | jq -r '.statistics.commentCount // "No comments available"')
 
               title=$(echo "$item" | jq -r '.snippet.title // "No title available"')
-              description=$(echo "$item" | jq -r '.snippet.description // "No description available" | select(length > 0) | select(trim | length > 0) or "No description available"')
+              description=$(echo "$item" | jq -r '.snippet.description // "No description available" | gsub("^\\s+|\\s+$"; "") | select(length > 0) or "No description available"')
               published_at=$(echo "$item" | jq -r '.snippet.publishedAt // "No published date available"')
               position=$(echo "$item" | jq -r '.snippet.position // "No position available"')
               thumbnails_default=$(echo "$item" | jq -r '.snippet.thumbnails.default.url // "No thumbnail available"')
