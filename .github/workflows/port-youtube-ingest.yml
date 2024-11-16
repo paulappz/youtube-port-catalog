@@ -8,6 +8,10 @@ on:
         description: |
           Who triggered the action and general context (blueprint, run id, etc...)
         type: string 
+        
+  push:
+    branches:
+      - 'test'    # Runs on test branch
 
 jobs:
   update_port_entities:
