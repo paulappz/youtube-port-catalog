@@ -29,22 +29,19 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
-          # Define Playlist ID
           PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
+          YOUTUBE_API_KEY="your_api_key" # Replace this with the actual API key
 
-          # Fetch playlist details
+          # Fetch the playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
-          # Log the raw response for debugging
-          echo "Raw playlist response: $playlist_response"
-
-          # Ensure response is valid JSON before processing
+          # Ensure the response is valid JSON before processing
           if ! echo "$playlist_response" | jq empty; then
             echo "Error: The playlist response is not valid JSON or is empty."
             exit 1
           fi
 
-          # Extract playlist details
+          # Extract playlist details using jq
           playlist_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.title')
           playlist_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.description // "No description available"')
 
@@ -52,7 +49,6 @@ jobs:
           localized_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.localized.title // empty')
           localized_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.localized.description // empty')
 
-          # If localized data is available, override the default title/description
           if [ -n "$localized_title" ]; then
             playlist_title="$localized_title"
           fi
@@ -104,27 +100,24 @@ jobs:
                                 }
                               }')
 
-          # Log the playlist JSON to inspect
+          # Log the playlist JSON
           echo "Playlist JSON: $playlist_json"
 
           # Save playlist JSON into a file
-          echo $playlist_json > playlist_data.json
+          echo "$playlist_json" > playlist_data.json
 
           # Fetch video details for each video in the playlist
           video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
-          # Initialize a separate video JSON array
+          # Initialize an empty video JSON array
           video_json_array="[]"
 
           # Loop through each video, gather details, and format JSON for Port
-          for video_item in $(echo $video_data | jq -r '.items[]'); do
-            video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
-            position=$(echo $video_item | jq -r '.snippet.position')
+          for video_item in $(echo "$video_data" | jq -r '.items[]'); do
+            video_id=$(echo "$video_item" | jq -r '.contentDetails.videoId')
+            position=$(echo "$video_item" | jq -r '.snippet.position')
             
             video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
-
-            # Log the raw video response for debugging
-            echo "Video Response: $video_response"
 
             # Ensure video response is valid JSON
             if ! echo "$video_response" | jq empty; then
@@ -132,31 +125,28 @@ jobs:
               continue
             fi
 
-            title=$(echo $video_response | jq -r '.items[0].snippet.title')
-
-            # Handle video description: if empty or missing, return "No description available"
-            description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
-
-            publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
-            raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
+            title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
+            description=$(echo "$video_response" | jq -r '.items[0].snippet.description // "No description available"')
+            publishedAt=$(echo "$video_response" | jq -r '.items[0].snippet.publishedAt')
+            raw_duration=$(echo "$video_response" | jq -r '.items[0].contentDetails.duration')
             
-            # Convert ISO 8601 duration (e.g., PT3M47S) to "3:47"
+            # Convert ISO 8601 duration to "H:MM:SS" format
             duration=$(echo $raw_duration | sed -E 's/^PT([0-9]+)H([0-9]+)M([0-9]+)S/\1:\2:\3/;s/^PT([0-9]+)M([0-9]+)S/\1:\2/;s/^PT([0-9]+)H([0-9]+)M/\1:\2/;s/^PT([0-9]+)M/\1:00/;s/^PT([0-9]+)H/\1:00:00/')
 
-            likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
-            views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
-            comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
+            likes=$(echo "$video_response" | jq -r '.items[0].statistics.likeCount // 0')
+            views=$(echo "$video_response" | jq -r '.items[0].statistics.viewCount // 0')
+            comments=$(echo "$video_response" | jq -r '.items[0].statistics.commentCount // 0')
             link="https://www.youtube.com/watch?v=$video_id"
 
             # Extract video thumbnails URLs
-            video_thumbnails_default=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
-            video_thumbnails_medium=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
-            video_thumbnails_high=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
-            video_thumbnails_standard=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
+            video_thumbnails_default=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
+            video_thumbnails_medium=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
+            video_thumbnails_high=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
+            video_thumbnails_standard=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
 
             # Get channel details
-            videoOwnerChannelTitle=$(echo $video_response | jq -r '.items[0].snippet.channelTitle // "No channel title"')
-            videoOwnerChannelId=$(echo $video_response | jq -r '.items[0].snippet.channelId // "No channel ID"')
+            videoOwnerChannelTitle=$(echo "$video_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
+            videoOwnerChannelId=$(echo "$video_response" | jq -r '.items[0].snippet.channelId // "No channel ID"')
 
             # Create video JSON
             video_json=$(jq -n --arg id "$video_id" \
@@ -180,7 +170,7 @@ jobs:
                                   identifier: $id,
                                   blueprint: "youtube_video",
                                   title: $title,
-                                  description:$description,
+                                  description: $description,
                                   properties: {
                                     link: $link,
                                     videoDescription: $description,
@@ -208,14 +198,13 @@ jobs:
             video_json_array=$(echo $video_json_array | jq --argjson video "$video_json" '. + [$video]')
           done
 
-          # Combine playlist and video JSON arrays
+          # Save the video JSON array into a file
+          echo "$video_json_array" > video_data.json
+
+          # Combine playlist and video JSON into a final file
           combined_json=$(echo "$video_json_array" | jq --argjson playlist "$playlist_json" '. + [$playlist]')
+          echo "$combined_json" > combined_playlist.json
 
-          # Log the final combined JSON
-          echo "Combined JSON: $combined_json"
-
-          # Save the combined JSON to a file
-          echo $combined_json > combined_playlist.json
 
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         id: bulk_create_update
