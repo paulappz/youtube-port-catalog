@@ -200,7 +200,7 @@ jobs:
             --arg likes "$likes" \
             --arg views "$views" \
             --arg comments "$comments" \
-            --arg position "$position" \
+            # --arg position "$position" \
             --arg playlist_id "$PLAYLIST_ID" \
             --arg videoOwnerChannelTitle "$videoOwnerChannelTitle" \
             --arg videoOwnerChannelId "$videoOwnerChannelId" \
@@ -220,7 +220,6 @@ jobs:
                 likes: $likes,
                 views: $views,
                 comments: $comments,
-                position: $position,
                 videoOwnerChannelTitle: $videoOwnerChannelTitle,
                 videoOwnerChannelId: $videoOwnerChannelId,
                 thumbnails: {
