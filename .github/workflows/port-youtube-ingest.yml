@@ -141,7 +141,13 @@ jobs:
           echo $combined_json > port_entities.json
           echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
 
+      - name: Debug: Print Combined JSON
+        run: |
+          cat port_entities.json
+          echo "entities=${{ env.entities }}"
+
       - name: Bulk Create/Update YouTube Video Entities in Port
+        id: bulk_create_update
         uses: port-labs/port-github-action@v1
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
