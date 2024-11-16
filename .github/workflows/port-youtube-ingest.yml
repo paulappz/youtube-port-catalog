@@ -143,8 +143,10 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
             #!/bin/bash
+
             # Fetch video details for each video in the playlist
             video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
+
             # Function to convert ISO 8601 duration to H:MM:SS format
             convert_duration() {
               local duration=$1
@@ -153,18 +155,42 @@ jobs:
               local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
               printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
             }
+
             # Loop through each video, gather details, and format JSON for Port
-            for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
+            for video_item in $(echo $video_data | jq -r '.items[]'); do
+              video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
+              position=$(echo $video_item | jq -r '.snippet.position')  # Added position here
+
               video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
-              title=$(echo $video_response | jq -r '.items[0].snippet.title')
-              description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
-              publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
-              raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
+
+              # Ensure video response is valid JSON
+              if ! echo "$video_response" | jq empty; then
+                echo "Error: The video response is not valid JSON or is empty for video ID $video_id."
+                continue
+              fi
+
+              # Extract video details
+              title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
+              description=$(echo "$video_response" | jq -r '.items[0].snippet.description // "No description available"')
+              publishedAt=$(echo "$video_response" | jq -r '.items[0].snippet.publishedAt')
+              raw_duration=$(echo "$video_response" | jq -r '.items[0].contentDetails.duration')
               duration=$(convert_duration $raw_duration)
-              likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
-              views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
-              comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
+              likes=$(echo "$video_response" | jq -r '.items[0].statistics.likeCount // 0')
+              views=$(echo "$video_response" | jq -r '.items[0].statistics.viewCount // 0')
+              comments=$(echo "$video_response" | jq -r '.items[0].statistics.commentCount // 0')
               link="https://www.youtube.com/watch?v=$video_id"
+
+              # Extract channel details
+              videoOwnerChannelTitle=$(echo "$video_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
+              videoOwnerChannelId=$(echo "$video_response" | jq -r '.items[0].snippet.channelId // "No channel ID"')
+
+              # Extract video thumbnails URLs
+              video_thumbnails_default=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
+              video_thumbnails_medium=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
+              video_thumbnails_high=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
+              video_thumbnails_standard=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
+
+              # Create video JSON
               video_json=$(jq -n --arg id "$video_id" \
                                 --arg title "$title" \
                                 --arg link "$link" \
@@ -174,7 +200,14 @@ jobs:
                                 --arg likes "$likes" \
                                 --arg views "$views" \
                                 --arg comments "$comments" \
+                                --arg position "$position" \  # Include position here
                                 --arg playlist_id "$PLAYLIST_ID" \
+                                --arg videoOwnerChannelTitle "$videoOwnerChannelTitle" \
+                                --arg videoOwnerChannelId "$videoOwnerChannelId" \  # Include channel title and ID here
+                                --arg video_thumbnails_default "$video_thumbnails_default" \
+                                --arg video_thumbnails_medium "$video_thumbnails_medium" \
+                                --arg video_thumbnails_high "$video_thumbnails_high" \
+                                --arg video_thumbnails_standard "$video_thumbnails_standard" \  # Include thumbnails here
                                 '{
                                   identifier: $id,
                                   blueprint: "youtube_video",
@@ -182,20 +215,31 @@ jobs:
                                   properties: {
                                     title: $title,
                                     link: $link,
-                                    description: $description,
+                                    videoDescription: $description,
                                     publishedAt: $publishedAt,
                                     duration: $duration,
                                     likes: $likes,
                                     views: $views,
-                                    comments: $comments
+                                    comments: $comments,
+                                    position: $position,  # Position added here
+                                    videoOwnerChannelTitle: $videoOwnerChannelTitle,  # Channel title added here
+                                    videoOwnerChannelId: $videoOwnerChannelId,  # Channel ID added here
+                                    thumbnails: {
+                                      default: $video_thumbnails_default,  # Default thumbnail
+                                      medium: $video_thumbnails_medium,    # Medium thumbnail
+                                      high: $video_thumbnails_high,        # High thumbnail
+                                      standard: $video_thumbnails_standard  # Standard thumbnail
+                                    }
                                   },
                                   relations: {
                                     playlist: $playlist_id
                                   }
                                 }')
+
               # Append each video JSON to the combined JSON array
               combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
             done
+
             # Save the combined JSON array to the environment variable for Port
             echo $combined_json > port_entities.json
             echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
