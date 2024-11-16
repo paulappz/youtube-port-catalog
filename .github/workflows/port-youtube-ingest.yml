@@ -127,8 +127,11 @@ jobs:
               title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
               description=$(echo "$video_response" | jq -r '.items[0].snippet.description // "No description available"')
               publishedAt=$(echo "$video_response" | jq -r '.items[0].snippet.publishedAt')
-              raw_duration=$(echo "$video_response" | jq -r '.items[0].contentDetails.duration')
-              duration=$(convert_duration $raw_duration)
+              
+               # Convert ISO 8601 duration to H:MM:SS format in one line
+              duration=$(echo $raw_duration | sed -E 's/^PT([0-9]+)H([0-9]+)M([0-9]+)S/\1:\2:\3/;s/^PT([0-9]+)M([0-9]+)S/\1:\2/;s/^PT([0-9]+)H([0-9]+)M/\1:\2/;s/^PT([0-9]+)M/\1:00/;s/^PT([0-9]+)H/\1:00:00/')
+
+              # duration=$(convert_duration $raw_duration)
               likes=$(echo "$video_response" | jq -r '.items[0].statistics.likeCount // 0')
               views=$(echo "$video_response" | jq -r '.items[0].statistics.viewCount // 0')
               comments=$(echo "$video_response" | jq -r '.items[0].statistics.commentCount // 0')
@@ -194,6 +197,9 @@ jobs:
                       }
                   }')
 
+                     # Log the video JSON for debugging
+                echo "Processed video JSON: $video_json"
+                
               # Append each video JSON to the combined JSON array
               combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
           done
