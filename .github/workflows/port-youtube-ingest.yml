@@ -143,7 +143,7 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
 
-            PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
+            
             # Function to convert ISO 8601 duration to H:MM:SS format
             convert_duration() {
               local duration=$1
@@ -154,7 +154,7 @@ jobs:
             }
 
             next_page_token=""
-
+            PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
             # Initialize the videos array
             videos=()
 
@@ -175,7 +175,7 @@ jobs:
                 position=$(echo "$video_item" | jq -r '.snippet.position')
 
                 # Fetch video details
-                video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$API_KEY")
+                video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
                 # Check if video response contains data
                 if [[ "$(echo $video_response | jq '.items | length')" -eq 0 ]]; then
