@@ -71,7 +71,7 @@ jobs:
           playlist_thumbnails_high=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
           playlist_thumbnails_standard=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
 
-          # Save playlist data in JSON format compatible with Port
+          # Create playlist JSON directly using jq
           playlist_json=$(jq -n --arg id "$PLAYLIST_ID" \
                               --arg title "$playlist_title" \
                               --arg link "$playlist_link" \
@@ -103,18 +103,18 @@ jobs:
                                 }
                               }')
 
-          # Log the playlist JSON for debugging
+          # Log the playlist JSON to inspect
           echo "Playlist JSON: $playlist_json"
 
           # Initialize combined JSON array with the playlist as the first element
-          combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
+          combined_json=$(echo "[]" | jq --argjson playlist "$playlist_json" '. + [$playlist]')
 
           # Log the combined JSON for debugging
           echo "Combined JSON: $combined_json"
 
-          # Save to Port or proceed with further actions
+          # Save the combined JSON to a file or pass to next steps in the workflow
+          echo $combined_json > combined_playlist.json
 
-                    
           # Fetch video details for each video in the playlist
           video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
           
