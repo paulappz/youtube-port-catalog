@@ -47,7 +47,7 @@ jobs:
       
           # Extract playlist details using jq
           playlist_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.title // "No title available"')
-          playlist_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.description // "No description available"')
+          playlist_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.description // "No description available" | select(length > 0) // "No description available"')
       
           # Handle localized description and title if they exist
           localized_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.localized.title // empty')
