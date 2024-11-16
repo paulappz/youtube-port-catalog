@@ -147,19 +147,20 @@ jobs:
 
               # Fetch video details for each video in the playlist
               video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
-              
-                    # Function to convert ISO 8601 duration to H:MM:SS format
-                    convert_duration() {
-                      local duration=$1
-                      local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
-                      local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
-                      local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
-                      printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
-                    }
                                   
                     # Loop through each video, gather details, and format JSON for Port
                     for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
                       video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
+                    position=$(echo $video_item | jq -r '.snippet.position')  # Added position here
+
+                          # Function to convert ISO 8601 duration to H:MM:SS format
+                          convert_duration() {
+                            local duration=$1
+                            local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
+                            local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
+                            local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
+                            printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
+                          }
 
                     # Extract video details
                     title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
@@ -205,7 +206,6 @@ jobs:
               blueprint: "youtube_video",
               title: $title,
               properties: {
-                title: $title,
                 link: $link,
                 videoDescription: $description,
                 publishedAt: $publishedAt,
