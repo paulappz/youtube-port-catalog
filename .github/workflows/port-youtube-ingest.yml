@@ -39,7 +39,7 @@ jobs:
             exit 1
           fi
 
-          item=$(echo "$playlist_response" | jq -r '.items <sup> </sup>')
+          item=$(echo "$playlist_response" | jq -r '.items[0]')
           playlist_id=$(echo "$item" | jq -r '.id')
           playlist_title=$(echo "$item" | jq -r '.snippet.title')
           playlist_description=$(echo "$item" | jq -r '.snippet.description // "No description available" | select(length > 0) | select(trim | length > 0) or "No description available"')
@@ -109,7 +109,7 @@ jobs:
                 continue
               fi
 
-              video_details=$(echo "$video_response" | jq -r '.items <sup> </sup>')
+              video_details=$(echo "$video_response" | jq -r '.items[0]')
               duration=$(echo "$video_details" | jq -r '.contentDetails.duration' | awk -F'T' '{print $2}' | sed 's/H/:/g; s/M/:/g; s/S//g' | sed 's/^0*//; s/:0*/:/g; s/^://')
               likes=$(echo "$video_details" | jq -r '.statistics.likeCount // "No likes available"')
               views=$(echo "$video_details" | jq -r '.statistics.viewCount // "No views available"')
