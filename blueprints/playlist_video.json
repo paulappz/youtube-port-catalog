@@ -1,15 +1,9 @@
 {
   "identifier": "youtube_video",
   "title": "YouTube Video",
-  "description": "Blueprint for YouTube Video",
   "icon": "YouTube",
   "schema": {
     "properties": {
-      "videoTitle": {
-        "type": "string",
-        "title": "Video Title",
-        "description": "The title of the YouTube video."
-      },
       "link": {
         "type": "string",
         "title": "Video Link",
@@ -96,7 +90,6 @@
       }
     },
     "required": [
-      "videoTitle",
       "videoDescription",
       "publishedAt",
       "duration",

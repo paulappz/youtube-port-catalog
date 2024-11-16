@@ -1,15 +1,9 @@
 {
   "identifier": "youtube_playlist",
   "title": "YouTube Playlist",
-  "description": "Blueprint for YouTube Playlist",
   "icon": "YouTube",
   "schema": {
     "properties": {
-      "playlistTitle": {
-        "type": "string",
-        "title": "Playlist Title",
-        "description": "The title of the YouTube playlist."
-      },
       "link": {
         "type": "string",
         "title": "Playlist Link",
@@ -83,7 +77,6 @@
       }
     },
     "required": [
-      "playlistTitle",
       "playlistDescription",
       "publishedAt",
       "channelId",
