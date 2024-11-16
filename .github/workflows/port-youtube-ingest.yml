@@ -25,27 +25,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-      # - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
-      #   id: bulk_create_update
-      #   uses: port-labs/port-github-action@v1
-      #   with:
-      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
-      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-      #     baseUrl: https://api.getport.io
-      #     operation: BULK_UPSERT
-      #     entities: ${{ env.entities }}
-      
-      # - name: Inform completion of request to Create / Update Catalog in Port
-      #   uses: port-labs/port-github-action@v1
-      #   with:
-      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
-      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-      #     baseUrl: https://api.getport.io
-      #     operation: PATCH_RUN
-      #     status: ${{ steps.bulk_create_update.outcome == 'success' && 'SUCCESS' || 'FAILURE' }}
-      #     runId: ${{fromJson(inputs.port_context).runId}}
-      #     logMessage: ${{ steps.bulk_create_update.outcome == 'success' && 'YouTube Data created/Updated Successfully' || 'Error in YouTube Data creation/update' }}
-      
       - name: Fetch YouTube Video Data
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
@@ -108,25 +87,19 @@ jobs:
           # Pagination setup
           nextPageToken=""
 
-          # Loop through the pages to get all videos
           while true; do
-              # Fetch video details for each video in the playlist
               video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$API_KEY&pageToken=$nextPageToken")
 
-              # Log the video data response to debug
               echo "Raw video_data response: $video_data"
 
-              # Ensure video data is valid and contains items
               if [ "$(echo $video_data | jq '.items | length')" -eq 0 ]; then
                   echo "No videos found for the playlist."
                   exit 1
               fi
 
-              # Loop through each video, gather details, and format JSON for Port
               for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
                   video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$API_KEY")
 
-                  # Extract video details
                   title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
                   description=$(echo "$video_response" | jq -r '.items[0].snippet.description // "No description available"')
                   publishedAt=$(echo "$video_response" | jq -r '.items[0].snippet.publishedAt')
@@ -137,20 +110,16 @@ jobs:
                   comments=$(echo "$video_response" | jq -r '.items[0].statistics.commentCount // 0')
                   link="https://www.youtube.com/watch?v=$video_id"
 
-                  # Extract channel details
                   videoOwnerChannelTitle=$(echo "$video_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
                   videoOwnerChannelId=$(echo "$video_response" | jq -r '.items[0].snippet.channelId // "No channel ID"')
 
-                  # Extract video thumbnails URLs
                   video_thumbnails_default=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
                   video_thumbnails_medium=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
                   video_thumbnails_high=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
                   video_thumbnails_standard=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
 
-                  # Fetch position from playlist
                   position=$(echo "$video_data" | jq -r --arg video_id "$video_id" '.items[] | select(.contentDetails.videoId == $video_id) | .snippet.position')
 
-                  # Create video JSON
                   video_json=$(jq -n \
                       --arg id "$video_id" \
                       --arg title "$title" \
@@ -197,20 +166,38 @@ jobs:
                         }
                       }')
 
-                  # Log the video JSON for debugging
                   echo "Processed video JSON: $video_json"
 
-                  # Append each video JSON to the combined JSON array
                   combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
               done
 
-              # Check if there's a next page
               nextPageToken=$(echo $video_data | jq -r '.nextPageToken')
               if [ "$nextPageToken" == "null" ]; then
                   break
               fi
           done
 
-          # Save the combined JSON array to the environment variable for Port
           echo $combined_json > port_entities.json
           echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
+
+      - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
+        id: bulk_create_update
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: BULK_UPSERT
+          entities: ${{ env.entities }}
+      
+      - name: Inform completion of request to Create / Update Catalog in Port
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: ${{ steps.bulk_create_update.outcome == 'success' && 'SUCCESS' || 'FAILURE' }}
+          runId: ${{fromJson(inputs.port_context).runId}}
+          logMessage: ${{ steps.bulk_create_update.outcome == 'success' && 'YouTube Data created/Updated Successfully' || 'Error in YouTube Data creation/update' }}
+      
