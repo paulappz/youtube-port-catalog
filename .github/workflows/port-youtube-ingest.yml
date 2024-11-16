@@ -107,9 +107,9 @@ jobs:
       
           # Log the playlist JSON
           echo "Playlist JSON: $playlist_json"
-      
+
           # Save playlist JSON into an environment variable
-          echo "entities=$playlist_json" >> $GITHUB_ENV
+          echo "entities=[${playlist_json}]" >> $GITHUB_ENV
       
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         id: bulk_create_update
