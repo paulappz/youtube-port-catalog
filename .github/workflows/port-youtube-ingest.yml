@@ -25,7 +25,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: Fetch YouTube Playlist and Video Data
+      - name: Fetch YouTube Video Data
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
@@ -40,61 +40,8 @@ jobs:
             printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
           }
           
-          # Fetch playlist details
-          playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
-          
-          # Handle playlist description: if empty or missing, return "No description available"
-          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')
-      
-          # Handle localized title and description
-          playlist_title=$(echo $playlist_response | jq -r '.items[0].snippet.localized.title // .items[0].snippet.title')
-          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.localized.description // "'$playlist_description'"')
-      
-          playlist_published_at=$(echo $playlist_response | jq -r '.items[0].snippet.publishedAt')
-          playlist_channel_id=$(echo $playlist_response | jq -r '.items[0].snippet.channelId // "No channel ID"')
-          playlist_channel_title=$(echo $playlist_response | jq -r '.items[0].snippet.channelTitle // "No channel title"')
-          playlist_link="https://www.youtube.com/playlist?list=$PLAYLIST_ID"
-      
-          # Extract thumbnails URLs
-          playlist_thumbnails_default=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
-          playlist_thumbnails_medium=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
-          playlist_thumbnails_high=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
-          playlist_thumbnails_standard=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
-      
-          # Save playlist data in JSON format compatible with Port
-          playlist_json=$(jq -n --arg id "$PLAYLIST_ID" \
-                              --arg title "$playlist_title" \
-                              --arg link "$playlist_link" \
-                              --arg description "$playlist_description" \
-                              --arg publishedAt "$playlist_published_at" \
-                              --arg channelId "$playlist_channel_id" \
-                              --arg channelTitle "$playlist_channel_title" \
-                              --arg default_thumbnail "$playlist_thumbnails_default" \
-                              --arg medium_thumbnail "$playlist_thumbnails_medium" \
-                              --arg high_thumbnail "$playlist_thumbnails_high" \
-                              --arg standard_thumbnail "$playlist_thumbnails_standard" \
-                              '{
-                                identifier: $id,
-                                blueprint: "youtube_playlist",
-                                title: $title,
-                                description: $description,
-                                properties: {
-                                  link: $link,
-                                  playlistDescription: $description,
-                                  publishedAt: $publishedAt,
-                                  channelId: $channelId,
-                                  channelTitle: $channelTitle,
-                                  thumbnails: {
-                                    default: $default_thumbnail,
-                                    medium: $medium_thumbnail,
-                                    high: $high_thumbnail,
-                                    standard: $standard_thumbnail
-                                  }
-                                }
-                              }')
-      
-          # Initialize combined JSON array with the playlist as the first element
-          combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
+          # Initialize combined JSON array
+          combined_json="[]"
       
           # Fetch video details for each video in the playlist with pagination
           nextPageToken=""
@@ -106,95 +53,95 @@ jobs:
               video_id=$(echo $video_item | jq -r '.contentDetails.videoId')
               position=$(echo $video_item | jq -r '.snippet.position')
               
-          #     video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
+              video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
           
-          #     title=$(echo $video_response | jq -r '.items[0].snippet.title')
-          #     # Handle video description: if empty or missing, return "No description available"
-          #     description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
+              title=$(echo $video_response | jq -r '.items[0].snippet.title')
+              # Handle video description: if empty or missing, return "No description available"
+              description=$(echo $video_response | jq -r '.items[0].snippet.description // "No description available"')
           
-          #     publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
-          #     raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
+              publishedAt=$(echo $video_response | jq -r '.items[0].snippet.publishedAt')
+              raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
               
-          #     # Convert ISO 8601 duration (e.g., PT3M47S) to "3:47"
-          #     duration=$(convert_duration $raw_duration)
+              # Convert ISO 8601 duration (e.g., PT3M47S) to "3:47"
+              duration=$(convert_duration $raw_duration)
               
-          #     likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
-          #     views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
-          #     comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
-          #     link="https://www.youtube.com/watch?v=$video_id"
+              likes=$(echo $video_response | jq -r '.items[0].statistics.likeCount // 0')
+              views=$(echo $video_response | jq -r '.items[0].statistics.viewCount // 0')
+              comments=$(echo $video_response | jq -r '.items[0].statistics.commentCount // 0')
+              link="https://www.youtube.com/watch?v=$video_id"
           
-          #     # Extract video thumbnails URLs
-          #     video_thumbnails_default=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
-          #     video_thumbnails_medium=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
-          #     video_thumbnails_high=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
-          #     video_thumbnails_standard=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
+              # Extract video thumbnails URLs
+              video_thumbnails_default=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
+              video_thumbnails_medium=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
+              video_thumbnails_high=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
+              video_thumbnails_standard=$(echo $video_response | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
           
-          #     # Get channel details
-          #     videoOwnerChannelTitle=$(echo $video_response | jq -r '.items[0].snippet.channelTitle // "No channel title"')
-          #     videoOwnerChannelId=$(echo $video_response | jq -r '.items[0].snippet.channelId // "No channel ID"')
+              # Get channel details
+              videoOwnerChannelTitle=$(echo $video_response | jq -r '.items[0].snippet.channelTitle // "No channel title"')
+              videoOwnerChannelId=$(echo $video_response | jq -r '.items[0].snippet.channelId // "No channel ID"')
           
-          #     # Correct the placement of channel title and ID inside properties
-          #     video_json=$(jq -n --arg id "$video_id" \
-          #                         --arg title "$title" \
-          #                         --arg link "$link" \
-          #                         --arg description "$description" \
-          #                         --arg publishedAt "$publishedAt" \
-          #                         --arg duration "$duration" \
-          #                         --arg likes "$likes" \
-          #                         --arg views "$views" \
-          #                         --arg comments "$comments" \
-          #                         --arg position "$position" \
-          #                         --arg playlist_id "$PLAYLIST_ID" \
-          #                         --arg default_thumbnail "$video_thumbnails_default" \
-          #                         --arg medium_thumbnail "$video_thumbnails_medium" \
-          #                         --arg high_thumbnail "$video_thumbnails_high" \
-          #                         --arg standard_thumbnail "$video_thumbnails_standard" \
-          #                         --arg videoOwnerChannelTitle "$videoOwnerChannelTitle" \
-          #                         --arg videoOwnerChannelId "$videoOwnerChannelId" \
-          #                         '{
-          #                           identifier: $id,
-          #                           blueprint: "youtube_video",
-          #                           title: $title,
-          #                           description: $description,
-          #                           properties: {
-          #                             link: $link,
-          #                             videoDescription: $description,
-          #                             publishedAt: $publishedAt,
-          #                             duration: $duration,
-          #                             likes: $likes,
-          #                             views: $views,
-          #                             comments: $comments,
-          #                             position: $position,
-          #                             thumbnails: {
-          #                               default: $default_thumbnail,
-          #                               medium: $medium_thumbnail,
-          #                               high: $high_thumbnail,
-          #                               standard: $standard_thumbnail
-          #                             },
-          #                             videoOwnerChannelTitle: $videoOwnerChannelTitle,
-          #                             videoOwnerChannelId: $videoOwnerChannelId
-          #                           },
-          #                           relations: {
-          #                             playlist: $playlist_id
-          #                           }
-          #                         }')
+              # Correct the placement of channel title and ID inside properties
+              video_json=$(jq -n --arg id "$video_id" \
+                                  --arg title "$title" \
+                                  --arg link "$link" \
+                                  --arg description "$description" \
+                                  --arg publishedAt "$publishedAt" \
+                                  --arg duration "$duration" \
+                                  --arg likes "$likes" \
+                                  --arg views "$views" \
+                                  --arg comments "$comments" \
+                                  --arg position "$position" \
+                                  --arg playlist_id "$PLAYLIST_ID" \
+                                  --arg default_thumbnail "$video_thumbnails_default" \
+                                  --arg medium_thumbnail "$video_thumbnails_medium" \
+                                  --arg high_thumbnail "$video_thumbnails_high" \
+                                  --arg standard_thumbnail "$video_thumbnails_standard" \
+                                  --arg videoOwnerChannelTitle "$videoOwnerChannelTitle" \
+                                  --arg videoOwnerChannelId "$videoOwnerChannelId" \
+                                  '{
+                                    identifier: $id,
+                                    blueprint: "youtube_video",
+                                    title: $title,
+                                    description: $description,
+                                    properties: {
+                                      link: $link,
+                                      videoDescription: $description,
+                                      publishedAt: $publishedAt,
+                                      duration: $duration,
+                                      likes: $likes,
+                                      views: $views,
+                                      comments: $comments,
+                                      position: $position,
+                                      thumbnails: {
+                                        default: $default_thumbnail,
+                                        medium: $medium_thumbnail,
+                                        high: $high_thumbnail,
+                                        standard: $standard_thumbnail
+                                      },
+                                      videoOwnerChannelTitle: $videoOwnerChannelTitle,
+                                      videoOwnerChannelId: $videoOwnerChannelId
+                                    },
+                                    relations: {
+                                      playlist: $playlist_id
+                                    }
+                                  }')
           
-          #     # Append each video JSON to the combined JSON array
-          #     combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
-          #   done
+              # Append each video JSON to the combined JSON array
+              combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
+            done
       
-          #   # Check for nextPageToken to determine if there are more pages
-          #   nextPageToken=$(echo $video_data | jq -r '.nextPageToken')
-          #   if [ -z "$nextPageToken" ]; then
-          #     break
-          #   fi
-          # done
+            # Check for nextPageToken to determine if there are more pages
+            nextPageToken=$(echo $video_data | jq -r '.nextPageToken')
+            if [ -z "$nextPageToken" ]; then
+              break
+            fi
+          done
       
           # Save the combined JSON array to the environment variable for Port
           echo $combined_json > port_entities.json
           echo "entities=$(jq -c . port_entities.json)" >> $GITHUB_ENV
 
-      - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
+      - name: Bulk Create/Update YouTube Video Entities in Port
         uses: port-labs/port-github-action@v1
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
