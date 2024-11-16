@@ -144,15 +144,16 @@ jobs:
         run: |
 
             PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
-              # Fetch video details for each video in the playlist
+
+            # Fetch video details for each video in the playlist
             video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=2&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
             # Log the video data response to debug
             echo "Raw video_data response: $video_data"
 
-            # Ensure the response is valid JSON and contains items
-            if [ "$(echo "$video_data" | jq '.items | length')" -eq 0 ]; then
-              echo "No videos found for the playlist or the response is empty."
+            # Ensure video data is valid and contains items
+            if [ "$(echo $video_data | jq '.items | length')" -eq 0 ]; then
+              echo "No videos found for the playlist."
               exit 1
             fi
 
@@ -165,9 +166,6 @@ jobs:
               echo "Processing video ID: $video_id, Position: $position"
 
               video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
-
-              # Log the raw video response for debugging
-              echo "Raw video response: $video_response"
 
               # Ensure video response is valid JSON
               if ! echo "$video_response" | jq empty; then
@@ -195,18 +193,6 @@ jobs:
               video_thumbnails_medium=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
               video_thumbnails_high=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
               video_thumbnails_standard=$(echo "$video_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
-
-              # Log the extracted video details
-              echo "Title: $title"
-              echo "Description: $description"
-              echo "Published At: $publishedAt"
-              echo "Duration: $duration"
-              echo "Likes: $likes"
-              echo "Views: $views"
-              echo "Comments: $comments"
-              echo "Thumbnails: Default: $video_thumbnails_default, Medium: $video_thumbnails_medium, High: $video_thumbnails_high, Standard: $video_thumbnails_standard"
-              echo "Channel Title: $videoOwnerChannelTitle"
-              echo "Channel ID: $videoOwnerChannelId"
 
               # Create video JSON
               video_json=$(jq -n --arg id "$video_id" \
@@ -253,9 +239,6 @@ jobs:
                                     playlist: $playlist_id
                                   }
                                 }')
-
-              # Log the video JSON
-              echo "Video JSON: $video_json"
 
               # Append each video JSON to the combined JSON array
               combined_json=$(echo $combined_json | jq --argjson video "$video_json" '. + [$video]')
