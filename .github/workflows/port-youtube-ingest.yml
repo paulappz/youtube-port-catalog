@@ -30,37 +30,33 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
-          
+
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
-      
-          # Log the raw response for debugging
+
+          # Log the raw response to check for errors
           echo "Raw playlist response: $playlist_response"
-      
-          # Check if the response is valid JSON
+
+          # Ensure response is valid JSON before processing
           if ! echo "$playlist_response" | jq empty; then
-            echo "Error: The playlist response is not valid JSON."
+            echo "Error: The playlist response is not valid JSON or is empty."
             exit 1
           fi
-          
-          # Handle playlist description: if empty or missing, return "No description available"
-          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.description // "No description available"')
-      
-          # Handle playlist title and fallback if localized data is not available
-          playlist_title=$(echo $playlist_response | jq -r '.items[0].snippet.localized.title // .items[0].snippet.title')
-          playlist_description=$(echo $playlist_response | jq -r '.items[0].snippet.localized.description // "'$playlist_description'"')
-      
-          playlist_published_at=$(echo $playlist_response | jq -r '.items[0].snippet.publishedAt')
-          playlist_channel_id=$(echo $playlist_response | jq -r '.items[0].snippet.channelId // "No channel ID"')
-          playlist_channel_title=$(echo $playlist_response | jq -r '.items[0].snippet.channelTitle // "No channel title"')
+
+          # Extract required fields using jq
+          playlist_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.title')
+          playlist_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.description // "No description available"')
+          playlist_published_at=$(echo "$playlist_response" | jq -r '.items[0].snippet.publishedAt')
+          playlist_channel_id=$(echo "$playlist_response" | jq -r '.items[0].snippet.channelId // "No channel ID"')
+          playlist_channel_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
           playlist_link="https://www.youtube.com/playlist?list=$PLAYLIST_ID"
-      
+
           # Extract thumbnails URLs
-          playlist_thumbnails_default=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
-          playlist_thumbnails_medium=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
-          playlist_thumbnails_high=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
-          playlist_thumbnails_standard=$(echo $playlist_response | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
-      
+          playlist_thumbnails_default=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.default.url // "No thumbnail URL"')
+          playlist_thumbnails_medium=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.medium.url // "No thumbnail URL"')
+          playlist_thumbnails_high=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.high.url // "No thumbnail URL"')
+          playlist_thumbnails_standard=$(echo "$playlist_response" | jq -r '.items[0].snippet.thumbnails.standard.url // "No thumbnail URL"')
+
           # Save playlist data in JSON format compatible with Port
           playlist_json=$(jq -n --arg id "$PLAYLIST_ID" \
                               --arg title "$playlist_title" \
@@ -92,7 +88,7 @@ jobs:
                                   }
                                 }
                               }')
-      
+
           # Initialize combined JSON array with the playlist as the first element
           combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
           
