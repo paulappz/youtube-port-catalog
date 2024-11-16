@@ -34,7 +34,13 @@ jobs:
           # Fetch playlist details
           playlist_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&id=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
 
-          # Log the raw response to check for errors
+          # Check if the response is empty
+          if [ -z "$playlist_response" ]; then
+            echo "Error: The playlist response is empty."
+            exit 1
+          fi
+
+          # Log the raw response for debugging
           echo "Raw playlist response: $playlist_response"
 
           # Ensure response is valid JSON before processing
@@ -43,9 +49,23 @@ jobs:
             exit 1
           fi
 
-          # Extract required fields using jq
+          # Extract playlist title and description using jq
           playlist_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.title')
           playlist_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.description // "No description available"')
+
+          # Handle localized description and title if they exist
+          localized_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.localized.title // empty')
+          localized_description=$(echo "$playlist_response" | jq -r '.items[0].snippet.localized.description // empty')
+
+          # If localized data is available, override the default title/description
+          if [ -n "$localized_title" ]; then
+            playlist_title="$localized_title"
+          fi
+          if [ -n "$localized_description" ]; then
+            playlist_description="$localized_description"
+          fi
+
+          # Extract other necessary details
           playlist_published_at=$(echo "$playlist_response" | jq -r '.items[0].snippet.publishedAt')
           playlist_channel_id=$(echo "$playlist_response" | jq -r '.items[0].snippet.channelId // "No channel ID"')
           playlist_channel_title=$(echo "$playlist_response" | jq -r '.items[0].snippet.channelTitle // "No channel title"')
@@ -91,7 +111,13 @@ jobs:
 
           # Initialize combined JSON array with the playlist as the first element
           combined_json=$(jq -n --argjson playlist "$playlist_json" '[$playlist]')
-          
+
+          # Log the combined JSON for debugging
+          echo "Combined JSON: $combined_json"
+
+          # Proceed with additional processing or saving combined_json to an environment variable for Port
+
+                    
           # Fetch video details for each video in the playlist
           video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
           
