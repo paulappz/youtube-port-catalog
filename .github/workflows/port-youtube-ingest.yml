@@ -156,7 +156,7 @@ jobs:
                         # Loop through each video item in the playlist
                     for video_item in $(echo "$video_data" | jq -r '.items[]'); do
                     video_id=$(echo "$video_item" | jq -r '.contentDetails.videoId')
-                    position=$(echo "$video_item" | jq -r '.snippet.position')
+                    # position=$(echo "$video_item" | jq -r '.snippet.position')
 
                       video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
