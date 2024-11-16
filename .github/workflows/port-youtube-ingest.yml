@@ -207,9 +207,12 @@ jobs:
             echo "Video JSON: $video_json"
 
             # Append each video JSON to the combined JSON array
-            combined_json=$(echo "$combined_json" | jq --argjson video "$video
+            combined_json=$(echo "$combined_json" | jq --argjson video "$video_json" '. + [$video]')
+          done
 
-              
+          # Save the combined JSON to a file or pass to next steps in the workflow
+          echo $combined_json > combined_playlist.json
+
       - name: Bulk Create/Update YouTube Playlist and Video Entities in Port
         id: bulk_create_update
         uses: port-labs/port-github-action@v1
