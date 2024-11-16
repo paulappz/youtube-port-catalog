@@ -170,10 +170,16 @@ jobs:
               title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
               description=$(echo "$video_response" | jq -r '.items[0].snippet.description // "No description available"')
               publishedAt=$(echo "$video_response" | jq -r '.items[0].snippet.publishedAt')
-              raw_duration=$(echo "$video_response" | jq -r '.items[0].contentDetails.duration')
+              convert_duration() {
+                local duration=$1
+                local hours=$(echo $duration | grep -oP '(?<=PT)(\d+)H' | grep -oP '\d+')
+                local minutes=$(echo $duration | grep -oP '(?<=T|\d)M' | grep -oP '\d+')
+                local seconds=$(echo $duration | grep -oP '(?<=M|\d)S' | grep -oP '\d+')
+                printf "%s:%02d:%02d" "${hours:-0}" "${minutes:-0}" "${seconds:-0}"
+              }
+              raw_duration=$(echo $video_response | jq -r '.items[0].contentDetails.duration')
+              duration=$(convert_duration $raw_duration)
 
-              # Convert ISO 8601 duration to H:MM:SS format
-              duration=$(echo $raw_duration | sed -E 's/^PT([0-9]+)H([0-9]+)M([0-9]+)S/\1:\2:\3/;s/^PT([0-9]+)M([0-9]+)S/\1:\2/;s/^PT([0-9]+)H([0-9]+)M/\1:\2/;s/^PT([0-9]+)M/\1:00/;s/^PT([0-9]+)H/\1:00:00/')
 
               likes=$(echo "$video_response" | jq -r '.items[0].statistics.likeCount // 0')
               views=$(echo "$video_response" | jq -r '.items[0].statistics.viewCount // 0')
