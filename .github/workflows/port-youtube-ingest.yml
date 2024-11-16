@@ -149,7 +149,7 @@ jobs:
               video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
                                   
                     # # Loop through each video, gather details, and format JSON for Port
-                    # for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
+                    for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
                     #   # position=$(echo "$video_id" | jq -r '.snippet.position')
                     #   position=$(echo $video_id | jq -r '.snippet.position')  # Added position here
 
