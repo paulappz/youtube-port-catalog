@@ -148,17 +148,10 @@ jobs:
               # Fetch video details for each video in the playlist
               video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$YOUTUBE_API_KEY")
                                   
-                  # Loop through each video, gather details, and format JSON for Port
-                for video_item in $(echo $video_data | jq -r '.items[]'); do
-                video_id=$(echo $video_item | jq -r '.contentDetails.videoId')  # Get videoId for each video
-                position=$(echo $video_item | jq -r '.snippet.position')        # Get position for each video
+                    # Loop through each video, gather details, and format JSON for Port
+                    for video_id in $(echo $video_data | jq -r '.items[].contentDetails.videoId'); do
+                      video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
 
-                # Fetch the video response with more detailed information
-                video_response=$(curl -s "https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=$video_id&key=$YOUTUBE_API_KEY")
-
-                # Log the video ID and position for debugging
-                echo "Processing video ID: $video_id, Position: $position"
-                
                           # Function to convert ISO 8601 duration to H:MM:SS format
                           convert_duration() {
                             local duration=$1
@@ -170,6 +163,7 @@ jobs:
 
                     # Extract video details
                     title=$(echo "$video_response" | jq -r '.items[0].snippet.title')
+                    position=$(echo "$video_response" | jq -r '.items[0].snippet.position')
                     description=$(echo "$video_response" | jq -r '.items[0].snippet.description // "No description available"')
                     publishedAt=$(echo "$video_response" | jq -r '.items[0].snippet.publishedAt')
                     raw_duration=$(echo "$video_response" | jq -r '.items[0].contentDetails.duration')
