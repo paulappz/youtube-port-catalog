@@ -287,6 +287,9 @@ name: Update YouTube Playlist and Video Entities in Port
 on:
   workflow_dispatch:
     inputs:
+      playlist_id:
+        required: true
+        description: "Youtube Playlist Id"
       port_context:
         required: false
         description: |
@@ -309,10 +312,9 @@ jobs:
       - name: Fetch YouTube Video Data
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          PLAYLIST_ID: ${{ github.event.inputs.playlist_id }}
         run: |
 
-          # Fetch Playlist ID and API Key (replace with your actual values)
-          PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
           API_KEY="${YOUTUBE_API_KEY}"
 
           # Fetch playlist details
@@ -573,24 +575,25 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 ```json
 {
   "identifier": "create_youtube_catalog",
-  "title": "Create YouTube Catalog",
+  "title": "Create Youtube Catalog",
   "icon": "Github",
-  "description": "Automate YouTube Catalog Workflow",
+  "description": "Self Service Action for Youtube Catalog Workflow",
   "trigger": {
     "type": "self-service",
     "operation": "CREATE",
     "userInputs": {
       "properties": {
-        "service_name": {
+        "playlist_id": {
           "icon": "DefaultProperty",
-          "title": "Service Name",
+          "title": "Youtube Playlist Id",
           "type": "string"
         }
       },
       "required": [
-        "service_name"
+        "playlist_id"
       ]
-    }
+    },
+    "blueprintIdentifier": "youtubecatalog"
   },
   "invocationMethod": {
     "type": "GITHUB",
@@ -612,9 +615,11 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 ```
 
 <center>
+  <img  src='/img/selfservice_action.png'  border='1px'  />
+</center>
 
+<center>
   <img  src='/img/portaction.png'  border='1px'  />
-
 </center>
 
 </details>
