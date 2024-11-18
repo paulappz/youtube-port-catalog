@@ -23,7 +23,9 @@ This step is crucial as it allows your system to understand and manage data effi
 ### Data model setup
 1. Navigate to your [Port Builder](https://app.getport.io/settings/data-model) page.
 2. Click the `+ Blueprint` button to create a new blueprint.
-3. Click the Edit JSON button on the Modal
+3. Click the `Edit JSON` button on the modal that appears
+4. Copy and paste the blueprint schemas below into the blueprint editor
+
 
 
 ### Add Deployment blueprints.
