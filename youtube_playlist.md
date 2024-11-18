@@ -253,120 +253,7 @@ This step is crucial as it allows your system to understand and manage data effi
 
 </details>
 
-
-## Step 2: Create Youtube Catalog Blueprint using JSON definition.
-
-<details>
-
-<summary>Blueprint for `Youtube Catalog` Action (click to expand)</summary>
-
-```yaml showLineNumbers
-{
-  "identifier": "youtubecatalog",
-  "title": "YouTubeCatalogAutomation",
-  "icon": "Github",
-  "schema": {
-    "properties": {
-      "service_name": {
-        "icon": "Github",
-        "title": "Service Name",
-        "type": "string",
-        "description": "All Uppercase"
-      }
-    },
-    "required": [
-      "service_name"
-    ]
-  },
-  "mirrorProperties": {},
-  "calculationProperties": {},
-  "aggregationProperties": {},
-  "relations": {}
-}
-
-```
-
-<center>
-	<img  src='/img/catalog_blueprint.png'  border='1px'  />
-</center>
-
-</details>
-
- 
-### Create Self-service Actions for the Youtube Catalog
-
-Self-service actions in Port allow developers to perform tasks like scaffolding a service or provisioning a cloud resource through an intuitive UI.
-
-#### How It Works
-
-1.  **User Executes Action**: A user triggers an action from Port's UI.
-2.  **Payload Sent**: A payload with metadata and inputs is sent to your infrastructure.
-3.  **Job Triggered**: A job runs, and the user receives continuous progress updates.
-4.  **Update Port**: The action's status, logs, and links are sent back to Port.
-
-#### Step-by-Step Guide to create a Self-service Action for Youtube Playlist Workflow.
-
-1. Navigate to the Self-service page and click the `+ New Action` button.
-2. Click the `Edit JSON` button on the modal that appears.
-4. Copy and paste the self-service action JSON (seen below) in the JSON section.
-6. Click `Save`.
-
-
-<details>
-
-<summary> Self-service action JSON: (click to expand)</summary>
-
-```json
-{
-  "identifier": "create_youtube_catalog",
-  "title": "Create YouTube Catalog",
-  "icon": "Github",
-  "description": "Automate YouTube Catalog Workflow",
-  "trigger": {
-    "type": "self-service",
-    "operation": "CREATE",
-    "userInputs": {
-      "properties": {
-        "service_name": {
-          "icon": "DefaultProperty",
-          "title": "Service Name",
-          "type": "string"
-        }
-      },
-      "required": [
-        "service_name"
-      ]
-    }
-  },
-  "invocationMethod": {
-    "type": "GITHUB",
-    "org": "your-github-org",
-    "repo": "your-github-repo",
-    "workflow": "your-workflow-file.yml",
-    "workflowInputs": {
-      "port_context": {
-        "entity": "{{.entity}}",
-        "blueprint": "{{.action.blueprint}}",
-        "runId": "{{.run.id}}",
-        "trigger": "{{ .trigger }}"
-      }
-    },
-    "reportWorkflowStatus": true
-  },
-  "requiredApproval": false
-}
-```
-
-<center>
-
-  <img  src='/img/portaction.png'  border='1px'  />
-
-</center>
-
-</details>
-  
-
-## Step 3: Setup GitHub Actions Workflow 
+## Step 2: Setup GitHub Actions Workflow 
 
 1. Create `.github/workflows` in your repository.
 2. Inside `.github/workflows`, create a YAML file (e.g., `youtube_port_workflow.yml`).
@@ -618,6 +505,118 @@ jobs:
 <center>
 <img  src='/img/videos_details.png'  border='1px'  />
 </center>
+</details>
+
+
+## Step 3: Create Youtube Catalog Blueprint using JSON definition.
+
+<details>
+
+<summary>Blueprint for `Youtube Catalog` Action (click to expand)</summary>
+
+```yaml showLineNumbers
+{
+  "identifier": "youtubecatalog",
+  "title": "YouTubeCatalogAutomation",
+  "icon": "Github",
+  "schema": {
+    "properties": {
+      "service_name": {
+        "icon": "Github",
+        "title": "Service Name",
+        "type": "string",
+        "description": "All Uppercase"
+      }
+    },
+    "required": [
+      "service_name"
+    ]
+  },
+  "mirrorProperties": {},
+  "calculationProperties": {},
+  "aggregationProperties": {},
+  "relations": {}
+}
+
+```
+
+<center>
+	<img  src='/img/catalog_blueprint.png'  border='1px'  />
+</center>
+
+</details>
+
+ 
+### Create Self-service Actions for the Youtube Catalog
+
+Self-service actions in Port allow developers to perform tasks like scaffolding a service or provisioning a cloud resource through an intuitive UI.
+
+#### How It Works
+
+1.  **User Executes Action**: A user triggers an action from Port's UI.
+2.  **Payload Sent**: A payload with metadata and inputs is sent to your infrastructure.
+3.  **Job Triggered**: A job runs, and the user receives continuous progress updates.
+4.  **Update Port**: The action's status, logs, and links are sent back to Port.
+
+#### Step-by-Step Guide to create a Self-service Action for Youtube Playlist Workflow.
+
+1. Navigate to the Self-service page and click the `+ New Action` button.
+2. Click the `Edit JSON` button on the modal that appears.
+4. Copy and paste the self-service action JSON (seen below) in the JSON section.
+6. Click `Save`.
+
+
+<details>
+
+<summary> Self-service action JSON: (click to expand)</summary>
+
+```json
+{
+  "identifier": "create_youtube_catalog",
+  "title": "Create YouTube Catalog",
+  "icon": "Github",
+  "description": "Automate YouTube Catalog Workflow",
+  "trigger": {
+    "type": "self-service",
+    "operation": "CREATE",
+    "userInputs": {
+      "properties": {
+        "service_name": {
+          "icon": "DefaultProperty",
+          "title": "Service Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_name"
+      ]
+    }
+  },
+  "invocationMethod": {
+    "type": "GITHUB",
+    "org": "your-github-org",
+    "repo": "your-github-repo",
+    "workflow": "your-workflow-file.yml",
+    "workflowInputs": {
+      "port_context": {
+        "entity": "{{.entity}}",
+        "blueprint": "{{.action.blueprint}}",
+        "runId": "{{.run.id}}",
+        "trigger": "{{ .trigger }}"
+      }
+    },
+    "reportWorkflowStatus": true
+  },
+  "requiredApproval": false
+}
+```
+
+<center>
+
+  <img  src='/img/portaction.png'  border='1px'  />
+
+</center>
+
 </details>
 
   
