@@ -1,7 +1,7 @@
 {
   "identifier": "youtube_video",
   "title": "YouTube Video",
-  "icon": "YouTube",
+  "icon": "Youtrack",
   "schema": {
     "properties": {
       "link": {

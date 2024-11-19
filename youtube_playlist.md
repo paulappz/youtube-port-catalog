@@ -25,12 +25,9 @@ This step is crucial as it allows your system to understand and manage data effi
 ### Data model setup
 1. Navigate to your [Port Builder](https://app.getport.io/settings/data-model) page.
 2. Click the `+ Blueprint` button to create a new blueprint.
-3. Click the `Edit JSON` button on the modal that appears
-4. Copy and paste the blueprint schemas below into the blueprint editor
+3. Click the `Edit JSON` button on the modal that appears.
+4. Copy and paste the blueprint schemas below into the blueprint editor.
 
-
-
-### Add Youtuve Playlist and Video Blueprints.
 
 <details>
 <summary>Youtube playlist blueprint (click to expand)</summary>
@@ -39,7 +36,7 @@ This step is crucial as it allows your system to understand and manage data effi
 {
   "identifier": "youtube_playlist",
   "title": "YouTube Playlist",
-  "icon": "YouTube",
+  "icon": "Youtrack",
   "schema": {
     "properties": {
       "link": {
@@ -137,7 +134,7 @@ This step is crucial as it allows your system to understand and manage data effi
 {
   "identifier": "youtube_video",
   "title": "YouTube Video",
-  "icon": "YouTube",
+  "icon": "Youtrack",
   "schema": {
     "properties": {
       "link": {
@@ -276,7 +273,7 @@ This step is crucial as it allows your system to understand and manage data effi
 
 </details>
 
-3. Define Workflow in YAML
+3. Define Workflow in YAML.
 
 <details>
 <summary>GitHub Workflow (click to expand)</summary>
@@ -485,71 +482,10 @@ jobs:
 
 </details>
 
-
 4. Add and push the workflow file to your repository.
-5. Go to **Actions** tab in GitHub to see workflow execution.
-6. Go to **Settings** > **Secrets** to add Secrets used in the workflow.
-
   
-<details>
 
-<summary>Here’s an example of what you would see on Port calatog when Playlist and Video data has been injected. (click to expand)</summary>
-
-<center>
-<img  src='/img/playlist_catalog.png'  border='1px'  />
-</center>
-<center>
-<img  src='/img/playlist_details.png'  border='1px'  />
-</center>
-<center>
-<img  src='/img/videos_catalog.png'  border='1px'  />
-</center>
-<center>
-<img  src='/img/videos_details.png'  border='1px'  />
-</center>
-</details>
-
-
-## Step 3: Create Youtube Catalog Blueprint using JSON definition.
-
-<details>
-
-<summary>Blueprint for `Youtube Catalog` Action (click to expand)</summary>
-
-```yaml showLineNumbers
-{
-  "identifier": "youtubecatalog",
-  "title": "YouTubeCatalogAutomation",
-  "icon": "Github",
-  "schema": {
-    "properties": {
-      "service_name": {
-        "icon": "Github",
-        "title": "Service Name",
-        "type": "string",
-        "description": "All Uppercase"
-      }
-    },
-    "required": [
-      "service_name"
-    ]
-  },
-  "mirrorProperties": {},
-  "calculationProperties": {},
-  "aggregationProperties": {},
-  "relations": {}
-}
-
-```
-
-<center>
-	<img  src='/img/catalog_blueprint.png'  border='1px'  />
-</center>
-
-</details>
-
- 
-### Create Self-service Actions for the Youtube Catalog
+## Step 3: Create Self-service Actions for Youtube Playlist.
 
 Self-service actions in Port allow developers to perform tasks like scaffolding a service or provisioning a cloud resource through an intuitive UI.
 
@@ -564,9 +500,7 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 
 1. Navigate to the Self-service page and click the `+ New Action` button.
 2. Click the `Edit JSON` button on the modal that appears.
-4. Copy and paste the self-service action JSON (seen below) in the JSON section.
-6. Click `Save`.
-
+3. Copy and paste the self-service action JSON (seen below) in the JSON section.
 
 <details>
 
@@ -593,7 +527,7 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
         "playlist_id"
       ]
     },
-    "blueprintIdentifier": "youtubecatalog"
+    "blueprintIdentifier": "youtube_playlist"
   },
   "invocationMethod": {
     "type": "GITHUB",
@@ -601,6 +535,7 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
     "repo": "your-github-repo",
     "workflow": "your-workflow-file.yml",
     "workflowInputs": {
+      "{{ spreadValue() }}": "{{ .inputs }}",
       "port_context": {
         "entity": "{{.entity}}",
         "blueprint": "{{.action.blueprint}}",
@@ -614,14 +549,61 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 }
 ```
 
-<center>
-  <img  src='/img/selfservice_action.png'  border='1px'  />
-</center>
+</details>
+
+
+4. Click `Save`.
+5. Click  `Create` button on just created Action on the Self service action page.
+6. Enter the Playlist Id in the input feild 
+7. Click  `Execute` button
+
+  <details>
+  <summary> Execute Action (click to expand)</summary>
+  <center>
+    <img  src='/img/selfservice_action.png'  border='1px'  />
+  </center>
+
+  </details>
+
+8. Click  `My inprogress run` to see the Action status.
+
+  <details>
+
+  <summary> Action in progress (click to expand)</summary>
+  <center>
+    <img  src='/img/portaction.png'  border='1px'  />
+  </center>
+
+  </details>
+
+9. Go to **Actions** tab in GitHub to see workflow execution.
+  
+  <details>
+
+  <summary> GitHub Action (click to expand)</summary>
+  <center>
+    <img  src='/img/github_action.png'  border='1px'  />
+  </center>
+
+  </details>
+
+
+<details>
+
+<summary>Here’s an example of what you would see on Port calatog when Playlist and Video data has been injected. (click to expand)</summary>
 
 <center>
-  <img  src='/img/portaction.png'  border='1px'  />
+<img  src='/img/playlist_catalog.png'  border='1px'  />
 </center>
-
+<center>
+<img  src='/img/playlist_details.png'  border='1px'  />
+</center>
+<center>
+<img  src='/img/videos_catalog.png'  border='1px'  />
+</center>
+<center>
+<img  src='/img/videos_details.png'  border='1px'  />
+</center>
 </details>
 
   
