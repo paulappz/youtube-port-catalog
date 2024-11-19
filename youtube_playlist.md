@@ -554,8 +554,8 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 
 4. Click `Save`.
 5. Click  `Create` button on just created Action on the Self service action page.
-6. Enter the Playlist Id in the input feild 
-7. Click  `Execute` button
+6. Enter the Playlist Id in the input feild. 
+7. Click  `Execute` button.
 
   <details>
   <summary> Execute Action (click to expand)</summary>
