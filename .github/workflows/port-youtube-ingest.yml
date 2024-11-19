@@ -3,13 +3,15 @@ name: Update YouTube Playlist and Video Entities in Port
 on:
   workflow_dispatch:
     inputs:
+      playlist_id:
+        required: true
+        description: "Youtube Playlist Id"
       port_context:
         required: false
         description: |
           Who triggered the action and general context (blueprint, run id, etc...)
         type: string 
         
-
 jobs:
   update_port_entities:
     runs-on: ubuntu-latest
@@ -25,10 +27,9 @@ jobs:
       - name: Fetch YouTube Video Data
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          PLAYLIST_ID: ${{ github.event.inputs.playlist_id }}
         run: |
 
-          # Fetch Playlist ID and API Key (replace with your actual values)
-          PLAYLIST_ID="PL5ErBr2d3QJH0kbwTQ7HSuzvBb4zIWzhy"
           API_KEY="${YOUTUBE_API_KEY}"
 
           # Fetch playlist details
@@ -87,8 +88,6 @@ jobs:
           while true; do
               video_data=$(curl -s "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=10&playlistId=$PLAYLIST_ID&key=$API_KEY&pageToken=$nextPageToken")
 
-              echo "Raw video_data response: $video_data"
-
               if [ "$(echo $video_data | jq '.items | length')" -eq 0 ]; then
                   echo "No videos found for the playlist."
                   exit 1
@@ -140,7 +139,6 @@ jobs:
                         blueprint: "youtube_video",
                         title: $title,
                         properties: {
-                          title: $title,
                           link: $link,
                           videoDescription: $description,
                           publishedAt: $publishedAt,
@@ -197,4 +195,3 @@ jobs:
           status: ${{ steps.bulk_create_update.outcome == 'success' && 'SUCCESS' || 'FAILURE' }}
           runId: ${{fromJson(inputs.port_context).runId}}
           logMessage: ${{ steps.bulk_create_update.outcome == 'success' && 'YouTube Data created/Updated Successfully' || 'Error in YouTube Data creation/update' }}
-      
