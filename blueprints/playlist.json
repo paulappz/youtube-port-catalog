@@ -1,7 +1,7 @@
 {
   "identifier": "youtube_playlist",
   "title": "YouTube Playlist",
-  "icon": "YouTube",
+  "icon": "Youtrack",
   "schema": {
     "properties": {
       "link": {
