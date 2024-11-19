@@ -590,7 +590,7 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 
 <details>
 
-<summary>Here’s an example of what you would see on Port calatog when Playlist and Video data has been injected. (click to expand)</summary>
+<summary>Here’s an example of what you would see on Port calatog when playlist and video data have been ingested. (click to expand)</summary>
 
 <center>
 <img  src='/img/playlist_catalog.png'  border='1px'  />
