@@ -1,4 +1,4 @@
-# YouTube Playlist & Videos Catalog in Port
+# YouTube playlist & videos catalog in Port
 
 This guide will help you set up an automated process to catalog YouTube playlist and video data into Port.
 
@@ -16,7 +16,7 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
 -  `CLIENT_SECRET`: Your Port client secret.
 
   
-## Step 1: Model Data in Port
+## Model data in Port
 
 Data modeling in Port involves defining entities and their relationships to ensure consistent, structured data. 
 
@@ -250,7 +250,7 @@ This step is crucial as it allows your system to understand and manage data effi
 
 </details>
 
-## Step 2: Setup GitHub Actions Workflow 
+## Setup GitHub actions workflow
 
 1. Create `.github/workflows` in your repository.
 2. Inside `.github/workflows`, create a YAML file (e.g., `youtube_port_workflow.yml`).
@@ -273,10 +273,10 @@ This step is crucial as it allows your system to understand and manage data effi
 
 </details>
 
-3. Define Workflow in YAML.
+3. Define workflow in YAML.
 
 <details>
-<summary>GitHub Workflow (click to expand)</summary>
+<summary>GitHub workflow (click to expand)</summary>
 
 ```yaml showLineNumbers
 name: Update YouTube Playlist and Video Entities in Port
@@ -485,18 +485,18 @@ jobs:
 4. Add and push the workflow file to your repository.
   
 
-## Step 3: Create Self-service Actions for Youtube Playlist.
+## Create self-service actions for YouTube playlist
 
 Self-service actions in Port allow developers to perform tasks like scaffolding a service or provisioning a cloud resource through an intuitive UI.
 
-#### How It Works
+#### How it works
 
 1.  **User Executes Action**: A user triggers an action from Port's UI.
 2.  **Payload Sent**: A payload with metadata and inputs is sent to your infrastructure.
 3.  **Job Triggered**: A job runs, and the user receives continuous progress updates.
 4.  **Update Port**: The action's status, logs, and links are sent back to Port.
 
-#### Step-by-Step Guide to create a Self-service Action for Youtube Playlist Workflow.
+#### Guide to create a self-service action for YouTube playlist workflow
 
 1. Navigate to the Self-service page and click the `+ New Action` button.
 2. Click the `Edit JSON` button on the modal that appears.
@@ -553,19 +553,19 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 
 
 4. Click `Save`.
-5. Click  `Create` button on just created Action on the Self service action page.
+5. Click  `Create` button on just created action on the self service action page.
 6. Enter the Playlist Id in the input feild. 
 7. Click  `Execute` button.
 
   <details>
-  <summary> Execute Action (click to expand)</summary>
+  <summary> Execute action (click to expand)</summary>
   <center>
     <img  src='/img/selfservice_action.png'  border='1px'  />
   </center>
 
   </details>
 
-8. Click  `My inprogress run` to see the Action status.
+8. Click  `My inprogress run` to see the action status.
 
   <details>
 
@@ -580,7 +580,7 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
   
   <details>
 
-  <summary> GitHub Action (click to expand)</summary>
+  <summary> GitHub action (click to expand)</summary>
   <center>
     <img  src='/img/github_action.png'  border='1px'  />
   </center>
@@ -607,7 +607,7 @@ Self-service actions in Port allow developers to perform tasks like scaffolding 
 </details>
 
   
-## Step 4: Visualizing Data in Port
+## Visualizing data in Port
 
 By leveraging Port's Dashboards, you can create custom dashboards to do the following :
 1. A dashboard for tracking playlist-level metrics like the number of videos.
@@ -631,11 +631,11 @@ By leveraging Port's Dashboards, you can create custom dashboards to do the foll
 3. Select **New dashboard**.
 4. Name the dashboard ( Visualise Youtube Playlist ), choose an icon if desired, and click `Create`.
 
-### Creating a Dashboard in Port
+### Creating a dashboard in Port
 
 If you followed through with the dashboard setup, you will have created a new empty dashboard as seen in the last image. Let's get ready to add widgets.
 
-### Adding Widgets
+### Adding widgets
 
 Let's create a widget that displays the number of videos in a YouTube playlist.
 
@@ -648,17 +648,17 @@ Let's create a widget that displays the number of videos in a YouTube playlist.
 7. Click `Save`.
 
 <details>
-<summary><b>Count of Videos in Playlist (click to expand)</b></summary>
+<summary><b>Count of videos in playlist (click to expand)</b></summary>
     <center>
     <img src="/img/video_counts.png" border="1px" />
     </center>
 </details>
 
-#### Creating Other Widgets
+#### Creating other widgets
 
 You can also create other widgets to display additional data about your YouTube videos such as:
 
-**Average Number of Likes Across All Videos**
+**Average number of likes across all videos**
 
 1. Click `+ Widget` and select **Number Chart**.
 2. Title: `Average Likes`. (add the `Metric` icon).
@@ -671,13 +671,13 @@ You can also create other widgets to display additional data about your YouTube 
 8. Click `Save`.
 
 <details>
-<summary><b>Average Number of Likes (click to expand)</b></summary>
+<summary><b>Average number of likes (click to expand)</b></summary>
     <center>
     <img src="/img/average_likes.png" border="1px" />
     </center>
 </details>
 
-**Number of Views a Video Has**
+**Number of views a video has**
 
 1. Click `+ Widget` and select **Number Chart**.
 2. Title: `Total Views`. (add the `Metric` icon).
@@ -689,7 +689,7 @@ You can also create other widgets to display additional data about your YouTube 
 8. Click `Save`.
 
 <details>
-<summary><b>Number of Views (click to expand)</b></summary>
+<summary><b>Number of views (click to expand)</b></summary>
     <center>
     <img src="/img/total_views.png" border="1px" />
     </center>
