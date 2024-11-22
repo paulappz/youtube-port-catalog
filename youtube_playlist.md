@@ -9,7 +9,7 @@ Using Port's GitHub action, you’ll fetch YouTube data and ingest it into Port 
 
 1. [Create a Port account](https://app.getport.io) and set up API credentials.
 2. [Obtain a YouTube Data API Key](https://console.cloud.google.com/apis/credentials).
-3. [Set up GitHub secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) in your repository for:
+3. [Set up GitHub secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) in your repository for the following variables:
 
 -  `YOUTUBE_API_KEY`: Your YouTube API key.
 -  `CLIENT_ID`: Your Port client ID.
