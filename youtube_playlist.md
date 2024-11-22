@@ -273,7 +273,7 @@ This step is crucial as it allows your system to understand and manage data effi
 
 </details>
 
-3. Define workflow in YAML.
+3. Define the workflow logic using the below GitHub YAML configuration.
 
 <details>
 <summary>GitHub workflow (click to expand)</summary>
